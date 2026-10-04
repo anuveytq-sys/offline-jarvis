@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
+
+<title>JARVIS</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --cyan: #00eaff;
+  --cyan-soft: rgba(0,234,255,.35);
+  --blue: #168cff;
+  --dark: #02070d;
+  --panel: rgba(4,18,30,.72);
+  --text: #dffaff;
+  --muted: #75a9b7;
+}
+
+body {
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at center,
+      #062538 0%,
+      #020c15 35%,
+      #010408 75%
+    );
+  color: var(--text);
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+/* ═══════════════════════════════════
+   BACKGROUND
+   ═══════════════════════════════════ */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      rgba(0,234,255,.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0,234,255,.025) 1px,
+      transparent 1px
+    );
+
+  background-size: 45px 45px;
+
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════
+   MAIN
+   ═══════════════════════════════════ */
+
+.app {
+  width: 100%;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+}
+
+/* ═══════════════════════════════════
+   TOP BAR
+   ═══════════════════════════════════ */
+
+.topbar {
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 25px;
+
+  border-bottom:
+    1px solid rgba(0,234,255,.18);
+
+  background:
+    rgba(0,5,10,.55);
+
+  backdrop-filter: blur(12px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-orb {
+  width: 34px;
+  height: 34px;
+
+  border-radius: 50%;
+
+  border:
+    2px solid var(--cyan);
+
+  box-shadow:
+    0 0 12px var(--cyan),
+    inset 0 0 12px var(--cyan);
+
+  animation:
+    pulse 2s infinite;
+}
+
+.brand-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 5px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 12px;
+  letter-spacing: 2px;
+
+  color: var(--muted);
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+
+  border-radius: 50%;
+
+  background: #00ff99;
+
+  box-shadow:
+    0 0 10px #00ff99;
+}
+
+/* ═══════════════════════════════════
+   CENTER
+   ═══════════════════════════════════ */
+
+.center {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+}
+
+/* ═══════════════════════════════════
+   ARC REACTOR
+   ═══════════════════════════════════ */
+
+.reactor {
+  width: min(65vw, 330px);
+  aspect-ratio: 1;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring {
+  position: absolute;
+
+  border-radius: 50%;
+
+  border:
+    1px solid var(--cyan);
+
+  box-shadow:
+    0 0 20px var(--cyan-soft),
+    inset 0 0 20px var(--cyan-soft);
+}
+
+.ring.one {
+  inset: 0;
+  animation:
+    spin 15s linear infinite;
+}
+
+.ring.two {
+  inset: 13%;
+  border-style: dashed;
+
+  animation:
+    spinReverse 11s linear infinite;
+}
+
+.ring.three {
+  inset: 26%;
+
+  border-width: 2px;
+
+  animation:
+    pulse 2s infinite;
+}
+
+.ring.four {
+  inset: 37%;
+
+  border:
+    2px solid var(--cyan);
+
+  box-shadow:
+    0 0 35px var(--cyan),
+    inset 0 0 30px var(--cyan);
+
+  animation:
+    pulseStrong 1.8s infinite;
+}
+
+.core {
+  width: 18%;
+  aspect-ratio: 1;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      white 0%,
+      var(--cyan) 30%,
+      #087bff 60%,
+      transparent 72%
+    );
+
+  box-shadow:
+    0 0 45px var(--cyan),
+    0 0 90px rgba(0,234,255,.5);
+}
+
+/* ═══════════════════════════════════
+   LISTENING STATE
+   ═══════════════════════════════════ */
+
+.listening .ring.one {
+  animation:
+    spin 4s linear infinite;
+}
+
+.listening .ring.two {
+  animation:
+    spinReverse 3s linear infinite;
+}
+
+.listening .core {
+  transform: scale(1.35);
+
+  box-shadow:
+    0 0 70px var(--cyan),
+    0 0 130px rgba(0,234,255,.8);
+}
+
+.thinking .core {
+  animation:
+    thinking 1s infinite;
+}
+
+/* ═══════════════════════════════════
+   TEXT
+   ═══════════════════════════════════ */
+
+.system-text {
+  margin-top: 30px;
+
+  text-align: center;
+}
+
+.system-title {
+  font-size: 16px;
+  letter-spacing: 6px;
+
+  color: var(--cyan);
+
+  text-shadow:
+    0 0 15px var(--cyan);
+}
+
+.system-message {
+  margin-top: 12px;
+
+  min-height: 24px;
+
+  max-width: 80vw;
+
+  color: var(--muted);
+
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════
+   COMMAND PANEL
+   ═══════════════════════════════════ */
+
+.bottom {
+  padding:
+    15px 20px
+    25px;
+
+  background:
+    linear-gradient(
+      transparent,
+      rgba(0,7,13,.9)
+    );
+}
+
+.command-row {
+  max-width: 850px;
+  margin: auto;
+
+  display: flex;
+  gap: 10px;
+}
+
+.command-input {
+  flex: 1;
+
+  height: 52px;
+
+  padding: 0 18px;
+
+  border-radius: 12px;
+
+  border:
+    1px solid rgba(0,234,255,.3);
+
+  outline: none;
+
+  color: var(--text);
+
+  background:
+    rgba(3,17,27,.85);
+
+  box-shadow:
+    inset 0 0 20px rgba(0,234,255,.04);
+}
+
+.command-input::placeholder {
+  color: #4c7180;
+}
+
+button {
+  height: 52px;
+
+  padding: 0 20px;
+
+  border-radius: 12px;
+
+  border:
+    1px solid var(--cyan);
+
+  color: var(--cyan);
+
+  background:
+    rgba(0,234,255,.07);
+
+  cursor: pointer;
+
+  font-weight: bold;
+
+  transition:
+    .2s;
+}
+
+button:hover {
+  background:
+    rgba(0,234,255,.18);
+
+  box-shadow:
+    0 0 18px var(--cyan-soft);
+}
+
+button:active {
+  transform:
+    scale(.96);
+}
+
+.voice {
+  width: 58px;
+
+  padding: 0;
+
+  font-size: 21px;
+}
+
+.voice.active {
+  background:
+    rgba(0,234,255,.3);
+
+  box-shadow:
+    0 0 25px var(--cyan);
+}
+
+/* ═══════════════════════════════════
+   LOG
+   ═══════════════════════════════════ */
+
+.log {
+  max-width: 850px;
+
+  height: 105px;
+
+  margin:
+    12px auto 0;
+
+  padding: 10px;
+
+  overflow-y: auto;
+
+  font-family:
+    monospace;
+
+  font-size: 12px;
+
+  color: #75b9c9;
+}
+
+.log-line {
+  margin-bottom: 5px;
+}
+
+.log-line.user {
+  color: #bcefff;
+}
+
+.log-line.jarvis {
+  color: var(--cyan);
+}
+
+/* ═══════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════ */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinReverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: .65;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulseStrong {
+
+  0%,
+  100% {
+    transform: scale(.96);
+  }
+
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes thinking {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+/* ═══════════════════════════════════
+   MOBILE
+   ═══════════════════════════════════ */
+
+@media(max-width:600px) {
+
+  .topbar {
+    padding: 0 15px;
+  }
+
+  .brand-name {
+    font-size: 17px;
+    letter-spacing: 3px;
+  }
+
+  .reactor {
+    width: 75vw;
+  }
+
+  .command-row {
+    gap: 6px;
+  }
+
+  .command-input {
+    min-width: 0;
+  }
+
+  button {
+    padding: 0 14px;
+  }
+
+  .send {
+    display: none;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- TOP BAR -->
+
+  <header class="topbar">
+
+    <div class="brand">
+
+      <div class="brand-orb"></div>
+
+      <div class="brand-name">
+        JARVIS
+      </div>
+
+    </div>
+
+    <div class="status">
+
+      <span class="status-dot"
+            id="statusDot"></span>
+
+      <span id="statusText">
+        OFFLINE
+      </span>
+
+    </div>
+
+  </header>
+
+
+  <!-- CENTER -->
+
+  <main class="center"
+        id="center">
+
+    <div class="reactor"
+         id="reactor">
+
+      <div class="ring one"></div>
+
+      <div class="ring two"></div>
+
+      <div class="ring three"></div>
+
+      <div class="ring four"></div>
+
+      <div class="core"></div>
+
+    </div>
+
+
+    <div class="system-text">
+
+      <div class="system-title">
+        JARVIS AI SYSTEM
+      </div>
+
+      <div class="system-message"
+           id="systemMessage">
+
+        Initializing...
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- COMMAND -->
+
+  <footer class="bottom">
+
+    <div class="command-row">
+
+      <input
+        id="commandInput"
+        class="command-input"
+        autocomplete="off"
+        placeholder="Speak or type a command..."
+      />
+
+      <button
+        class="voice"
+        id="voiceButton"
+        title="Voice command">
+        🎤
+      </button>
+
+      <button
+        class="send"
+        id="sendButton">
+        SEND
+      </button>
+
+    </div>
+
+
+    <div class="log"
+         id="log"></div>
+
+  </footer>
+
+</div>
+
+
+<script>
+
+const input =
+  document.getElementById(
+    "commandInput"
+  );
+
+const sendButton =
+  document.getElementById(
+    "sendButton"
+  );
+
+const voiceButton =
+  document.getElementById(
+    "voiceButton"
+  );
+
+const message =
+  document.getElementById(
+    "systemMessage"
+  );
+
+const log =
+  document.getElementById(
+    "log"
+  );
+
+const reactor =
+  document.getElementById(
+    "reactor"
+  );
+
+const center =
+  document.getElementById(
+    "center"
+  );
+
+const statusText =
+  document.getElementById(
+    "statusText"
+  );
+
+
+// ═══════════════════════════════════
+// LOG
+// ═══════════════════════════════════
+
+function addLog(
+  speaker,
+  text
+) {
+
+  const line =
+    document.createElement(
+      "div"
+    );
+
+  line.className =
+    `log-line ${speaker}`;
+
+  line.textContent =
+    `${speaker === "user" ? "YOU" : "JARVIS"}: ${text}`;
+
+  log.appendChild(line);
+
+  log.scrollTop =
+    log.scrollHeight;
+}
+
+
+// ═══════════════════════════════════
+// UI STATE
+// ═══════════════════════════════════
+
+function setMessage(text) {
+  message.textContent = text;
+}
+
+function thinking(state) {
+
+  if (state) {
+    center.classList.add(
+      "thinking"
+    );
+  } else {
+    center.classList.remove(
+      "thinking"
+    );
+  }
+}
+
+function listening(state) {
+
+  if (state) {
+
+    reactor.classList.add(
+      "listening"
+    );
+
+    voiceButton.classList.add(
+      "active"
+    );
+
+    setMessage(
+      "LISTENING..."
+    );
+
+  } else {
+
+    reactor.classList.remove(
+      "listening"
+    );
+
+    voiceButton.classList.remove(
+      "active"
+    );
+  }
+}
+
+
+// ═══════════════════════════════════
+// SEND TEXT COMMAND
+// ═══════════════════════════════════
+
+async function sendCommand(text) {
+
+  text =
+    String(text || "").trim();
+
+  if (!text) {
+    return;
+  }
+
+  addLog(
+    "user",
+    text
+  );
+
+  input.value = "";
+
+  thinking(true);
+
+  setMessage(
+    "PROCESSING COMMAND..."
+  );
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/command",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+              command: text
+            })
+        }
+      );
+
+    const data =
+      await response.json();
+
+    const answer =
+      data.reply ||
+      "Command completed.";
+
+    addLog(
+      "jarvis",
+      answer
+    );
+
+    setMessage(
+      answer
+    );
+
+  } catch(error) {
+
+    addLog(
+      "jarvis",
+      "Connection to JARVIS failed."
+    );
+
+    setMessage(
+      "JARVIS SERVER UNAVAILABLE"
+    );
+  }
+
+  thinking(false);
+}
+
+
+// ═══════════════════════════════════
+// VOICE COMMAND
+// ═══════════════════════════════════
+
+async function voiceCommand() {
+
+  listening(true);
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/voice",
+        {
+          method: "POST"
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (data.command) {
+
+      addLog(
+        "user",
+        data.command
+      );
+    }
+
+    if (data.reply) {
+
+      addLog(
+        "jarvis",
+        data.reply
+      );
+
+      setMessage(
+        data.reply
+      );
+    }
+
+  } catch(error) {
+
+    addLog(
+      "jarvis",
+      "Voice command failed."
+    );
+
+    setMessage(
+      "VOICE SYSTEM ERROR"
+    );
+  }
+
+  listening(false);
+}
+
+
+// ═══════════════════════════════════
+// BUTTONS
+// ═══════════════════════════════════
+
+sendButton.addEventListener(
+  "click",
+  () => {
+    sendCommand(
+      input.value
+    );
+  }
+);
+
+voiceButton.addEventListener(
+  "click",
+  () => {
+    voiceCommand();
+  }
+);
+
+
+// ═══════════════════════════════════
+// ENTER KEY
+// ═══════════════════════════════════
+
+input.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter"
+    ) {
+
+      sendCommand(
+        input.value
+      );
+    }
+  }
+);
+
+
+// ═══════════════════════════════════
+// SERVER STATUS
+// ═══════════════════════════════════
+
+async function checkStatus() {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/status"
+      );
+
+    const data =
+      await response.json();
+
+    if (data.online) {
+
+      statusText.textContent =
+        "ONLINE / OFFLINE AI";
+
+      setMessage(
+        "SYSTEMS ONLINE — AWAITING COMMAND"
+      );
+
+    }
+
+  } catch {
+
+    statusText.textContent =
+      "OFFLINE";
+
+    setMessage(
+      "WAITING FOR JARVIS SERVER..."
+    );
+  }
+}
+
+
+// ═══════════════════════════════════
+// STARTUP
+// ═══════════════════════════════════
+
+checkStatus();
+
+setInterval(
+  checkStatus,
+  5000
+);
+
+</script>
+
+</body>
+</html>

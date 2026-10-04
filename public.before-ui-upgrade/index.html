@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1">
+
+<title>JARVIS Offline Core</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #06313a 0%,
+      #02090c 45%,
+      #000 100%
+    );
+
+  color: #00eaff;
+  font-family: Arial, sans-serif;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  width: min(900px, 94%);
+  text-align: center;
+}
+
+h1 {
+  font-size: 38px;
+  letter-spacing: 10px;
+  margin-bottom: 5px;
+}
+
+.status {
+  letter-spacing: 4px;
+  font-size: 12px;
+  color: #75ffff;
+}
+
+.reactor {
+  width: 210px;
+  height: 210px;
+
+  margin: 35px auto;
+
+  border-radius: 50%;
+
+  border: 3px solid #00eaff;
+
+  box-shadow:
+    0 0 20px #00eaff,
+    0 0 70px #006d7a,
+    inset 0 0 35px #00eaff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  animation: reactor 2s infinite;
+}
+
+.core {
+  width: 85px;
+  height: 85px;
+
+  border-radius: 50%;
+
+  background: #bfffff;
+
+  box-shadow:
+    0 0 20px #00eaff,
+    0 0 60px #00eaff;
+}
+
+@keyframes reactor {
+
+  0%,100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+
+}
+
+.panel {
+
+  background: rgba(0,20,25,.8);
+
+  border: 1px solid #007f91;
+
+  border-radius: 18px;
+
+  padding: 25px;
+
+  box-shadow:
+    0 0 30px rgba(0,234,255,.15);
+}
+
+#output {
+
+  min-height: 100px;
+
+  margin-bottom: 20px;
+
+  color: #d9ffff;
+
+  white-space: pre-wrap;
+
+  line-height: 1.6;
+
+}
+
+.controls {
+
+  display: flex;
+  gap: 8px;
+}
+
+input {
+
+  flex: 1;
+
+  padding: 15px;
+
+  background: #020b0e;
+
+  border: 1px solid #008fa0;
+
+  color: white;
+
+  border-radius: 8px;
+
+  outline: none;
+}
+
+button {
+
+  padding: 15px;
+
+  background: transparent;
+
+  border: 1px solid #00eaff;
+
+  color: #00eaff;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+button:hover {
+
+  background: #00eaff;
+
+  color: #001014;
+
+}
+
+.quick {
+
+  margin-top: 20px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  justify-content: center;
+}
+
+.quick button {
+
+  font-size: 12px;
+  padding: 9px 12px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>JARVIS</h1>
+
+<div class="status">
+OFFLINE CORE • SYSTEM ONLINE
+</div>
+
+<div class="reactor">
+  <div class="core"></div>
+</div>
+
+<div class="panel">
+
+<div id="output">
+JARVIS initialized.
+
+All local systems ready.
+
+Awaiting command...
+</div>
+
+<div class="controls">
+
+<input
+ id="command"
+ placeholder="Speak or type a command..."
+>
+
+<button onclick="sendCommand()">
+EXECUTE
+</button>
+
+<button onclick="startVoice()">
+🎤
+</button>
+
+</div>
+
+<div class="quick">
+
+<button onclick="quick('battery')">BATTERY</button>
+
+<button onclick="quick('storage')">STORAGE</button>
+
+<button onclick="quick('wifi')">WIFI</button>
+
+<button onclick="quick('system information')">
+SYSTEM
+</button>
+
+<button onclick="quick('time')">TIME</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const input =
+document.getElementById("command");
+
+const output =
+document.getElementById("output");
+
+async function sendCommand() {
+
+  const command =
+    input.value.trim();
+
+  if (!command)
+    return;
+
+  output.textContent =
+    "JARVIS processing...";
+
+  try {
+
+    const response =
+      await fetch("/api/command", {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+          "application/json"
+        },
+
+        body:
+          JSON.stringify({
+            command
+          })
+
+      });
+
+    const data =
+      await response.json();
+
+    output.textContent =
+      data.reply;
+
+    speak(data.reply);
+
+    input.value = "";
+
+  } catch {
+
+    output.textContent =
+      "JARVIS core connection failed.";
+
+  }
+
+}
+
+function quick(command) {
+
+  input.value =
+    command;
+
+  sendCommand();
+
+}
+
+input.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Enter")
+      sendCommand();
+
+  }
+);
+
+function speak(text) {
+
+  if (!("speechSynthesis" in window))
+    return;
+
+  speechSynthesis.cancel();
+
+  const voice =
+    new SpeechSynthesisUtterance(text);
+
+  voice.rate = 0.95;
+  voice.pitch = 0.85;
+
+  speechSynthesis.speak(voice);
+
+}
+
+function startVoice() {
+
+  const Recognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!Recognition) {
+
+    output.textContent =
+      "Voice recognition is not supported by this browser.";
+
+    return;
+  }
+
+  const recognition =
+    new Recognition();
+
+  recognition.lang = "en-IN";
+
+  recognition.start();
+
+  output.textContent =
+    "Listening...";
+
+  recognition.onresult =
+    event => {
+
+      const text =
+        event.results[0][0].transcript;
+
+      input.value = text;
+
+      sendCommand();
+
+    };
+
+  recognition.onerror =
+    () => {
+
+      output.textContent =
+        "I couldn't hear that command.";
+
+    };
+
+}
+
+</script>
+
+</body>
+</html>
