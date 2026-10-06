@@ -1,1365 +1,2525 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0,
-               maximum-scale=1.0,user-scalable=no">
 
-<title>JARVIS</title>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0,
+             maximum-scale=1.0, user-scalable=no"
+>
+
+<title>JARVIS — Advanced Personal AI</title>
 
 <style>
 
 /* =========================================================
-   JARVIS — HIGH TECH HUD
-   GUI ONLY
-   Backend endpoints remain:
+   JARVIS // QUANTUM HUD
+   FRONTEND ONLY
+   Backend endpoints preserved:
    /api/command
    /api/voice
    ========================================================= */
 
 :root {
-  --blue: #00bfff;
-  --cyan: #00eaff;
-  --deep-blue: #0066ff;
-  --dark: #020814;
-  --panel: rgba(3, 20, 38, 0.58);
-  --panel2: rgba(2, 30, 52, 0.42);
-  --line: rgba(0, 210, 255, 0.35);
-  --text: #d9f8ff;
-  --muted: #66a8bb;
-  --danger: #ff4d7d;
+
+    --cyan: #00eaff;
+    --cyan2: #62f5ff;
+    --blue: #008cff;
+    --deepblue: #0050ff;
+
+    --bg0: #00040a;
+    --bg1: #010b18;
+    --bg2: #02182d;
+
+    --panel: rgba(1,18,37,.72);
+
+    --line: rgba(0,215,255,.28);
+
+    --line2: rgba(0,215,255,.12);
+
+    --text: #d8fbff;
+
+    --muted: #477b92;
+
+    --glow:
+        0 0 12px rgba(0,225,255,.6),
+        0 0 35px rgba(0,120,255,.22);
 }
 
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
 * {
-  box-sizing: border-box;
+
+    box-sizing: border-box;
+
+    margin: 0;
+    padding: 0;
+
+    -webkit-tap-highlight-color:
+        transparent;
 }
+
 
 html,
 body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #01050d;
-  color: var(--text);
-  font-family:
-    "Segoe UI",
-    Arial,
-    sans-serif;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            ellipse at 50% 45%,
+            #06345d 0%,
+            #02182d 24%,
+            #010b18 55%,
+            #00040a 100%
+        );
+
+    color: var(--text);
+
+    font-family:
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
 }
 
-body {
-  position: relative;
-}
 
 /* =========================================================
-   BACKGROUND
+   GLOBAL ATMOSPHERE
    ========================================================= */
 
 body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -10;
 
-  background:
-    radial-gradient(
-      circle at 50% 48%,
-      rgba(0, 120, 255, 0.15),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 10% 10%,
-      rgba(0, 220, 255, 0.08),
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at 90% 90%,
-      rgba(0, 100, 255, 0.09),
-      transparent 25%
-    ),
-    linear-gradient(
-      135deg,
-      #01040a,
-      #03111e 50%,
-      #01050d
-    );
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 80;
+
+    background:
+
+        repeating-linear-gradient(
+            0deg,
+            rgba(0,220,255,.018) 0,
+            rgba(0,220,255,.018) 1px,
+            transparent 1px,
+            transparent 4px
+        );
+
+    mix-blend-mode:
+        screen;
 }
+
 
 body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -9;
-  pointer-events: none;
 
-  background-image:
-    linear-gradient(
-      rgba(0, 190, 255, 0.035) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(0, 190, 255, 0.035) 1px,
-      transparent 1px
-    );
+    content: "";
 
-  background-size: 42px 42px;
+    position: fixed;
 
-  mask-image:
-    radial-gradient(
-      ellipse at center,
-      black 20%,
-      transparent 85%
-    );
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 81;
+
+    background:
+        radial-gradient(
+            ellipse,
+            transparent 45%,
+            rgba(0,0,0,.65) 100%
+        );
 }
+
 
 /* =========================================================
-   PARTICLES
-   ========================================================= */
-
-.particles {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: -5;
-}
-
-.particle {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: var(--cyan);
-  border-radius: 50%;
-  opacity: 0.45;
-  box-shadow: 0 0 8px var(--cyan);
-
-  animation: particleFloat linear infinite;
-}
-
-.particle:nth-child(1) {
-  left: 8%;
-  top: 25%;
-  animation-duration: 11s;
-}
-
-.particle:nth-child(2) {
-  left: 18%;
-  top: 75%;
-  animation-duration: 15s;
-}
-
-.particle:nth-child(3) {
-  left: 31%;
-  top: 16%;
-  animation-duration: 13s;
-}
-
-.particle:nth-child(4) {
-  left: 47%;
-  top: 85%;
-  animation-duration: 17s;
-}
-
-.particle:nth-child(5) {
-  left: 62%;
-  top: 22%;
-  animation-duration: 12s;
-}
-
-.particle:nth-child(6) {
-  left: 74%;
-  top: 67%;
-  animation-duration: 16s;
-}
-
-.particle:nth-child(7) {
-  left: 88%;
-  top: 30%;
-  animation-duration: 14s;
-}
-
-.particle:nth-child(8) {
-  left: 94%;
-  top: 82%;
-  animation-duration: 18s;
-}
-
-@keyframes particleFloat {
-  0% {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-
-  20% {
-    opacity: 0.5;
-  }
-
-  80% {
-    opacity: 0.5;
-  }
-
-  100% {
-    transform: translateY(-120px);
-    opacity: 0;
-  }
-}
-
-/* =========================================================
-   MAIN APPLICATION
+   APPLICATION
    ========================================================= */
 
 .app {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
+
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+
+    isolation: isolate;
 }
 
+
 /* =========================================================
-   TOP BAR
+   CANVAS LAYERS
+   ========================================================= */
+
+#spaceCanvas,
+#networkCanvas {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    pointer-events: none;
+}
+
+
+#spaceCanvas {
+
+    z-index: 1;
+}
+
+
+#networkCanvas {
+
+    z-index: 4;
+
+    opacity: .75;
+}
+
+
+/* =========================================================
+   DECORATIVE CORNER BRACKETS
+   ========================================================= */
+
+.corner {
+
+    position: absolute;
+
+    width: 35px;
+    height: 35px;
+
+    z-index: 25;
+
+    opacity: .7;
+}
+
+
+.corner::before,
+.corner::after {
+
+    content: "";
+
+    position: absolute;
+
+    background:
+        var(--cyan);
+
+    box-shadow:
+        0 0 8px var(--cyan);
+}
+
+
+.corner::before {
+
+    width: 35px;
+    height: 1px;
+}
+
+
+.corner::after {
+
+    width: 1px;
+    height: 35px;
+}
+
+
+.c1 {
+
+    left: 8px;
+    top: 8px;
+}
+
+
+.c2 {
+
+    right: 8px;
+    top: 8px;
+
+    transform:
+        rotate(90deg);
+}
+
+
+.c3 {
+
+    left: 8px;
+    bottom: 8px;
+
+    transform:
+        rotate(-90deg);
+}
+
+
+.c4 {
+
+    right: 8px;
+    bottom: 8px;
+
+    transform:
+        rotate(180deg);
+}
+
+
+/* =========================================================
+   TOP SYSTEM BAR
    ========================================================= */
 
 .topbar {
-  position: absolute;
-  top: 18px;
-  left: 22px;
-  right: 22px;
 
-  height: 58px;
+    position: absolute;
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    left: 24px;
+    right: 24px;
 
-  z-index: 30;
+    top: 12px;
 
-  padding: 0 18px;
+    height: 63px;
 
-  border: 1px solid rgba(0, 210, 255, 0.22);
-  background: rgba(1, 13, 25, 0.58);
-  backdrop-filter: blur(14px);
+    z-index: 40;
 
-  clip-path:
-    polygon(
-      0 0,
-      calc(100% - 15px) 0,
-      100% 15px,
-      100% 100%,
-      15px 100%,
-      0 calc(100% - 15px)
-    );
+    display: flex;
 
-  box-shadow:
-    0 0 30px rgba(0, 150, 255, 0.05);
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        0 18px;
+
+    background:
+        linear-gradient(
+            110deg,
+            rgba(2,31,59,.9),
+            rgba(1,11,24,.76)
+        );
+
+    border:
+        1px solid
+        rgba(0,220,255,.32);
+
+    box-shadow:
+        0 0 28px
+        rgba(0,160,255,.10),
+
+        inset 0 0 25px
+        rgba(0,180,255,.035);
+
+    backdrop-filter:
+        blur(18px);
 }
+
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
 }
+
 
 .brand-orb {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
 
-  border: 1px solid var(--cyan);
+    position: relative;
 
-  box-shadow:
-    0 0 10px rgba(0, 234, 255, 0.8),
-    inset 0 0 12px rgba(0, 180, 255, 0.5);
+    width: 15px;
+    height: 15px;
 
-  position: relative;
+    border-radius: 50%;
 
-  animation: brandPulse 2s infinite;
+    background:
+        radial-gradient(
+            circle,
+            white 0%,
+            var(--cyan) 25%,
+            var(--blue) 70%
+        );
+
+    box-shadow:
+        0 0 8px var(--cyan),
+        0 0 24px var(--cyan),
+        0 0 50px var(--blue);
+
+    animation:
+        systemPulse 2.2s infinite;
 }
 
-.brand-orb::before,
+
 .brand-orb::after {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  border-radius: 50%;
-  border: 1px solid var(--blue);
+
+    content: "";
+
+    position: absolute;
+
+    inset: -7px;
+
+    border:
+        1px solid
+        rgba(0,230,255,.3);
+
+    border-radius: 50%;
+
+    animation:
+        miniSpin 4s linear infinite;
 }
 
-.brand-orb::after {
-  inset: 12px;
-  background: var(--cyan);
-  box-shadow: 0 0 10px var(--cyan);
-  border: 0;
-}
-
-@keyframes brandPulse {
-  50% {
-    transform: scale(1.08);
-  }
-}
 
 .brand-name {
-  letter-spacing: 5px;
-  font-size: 20px;
-  font-weight: 300;
+
+    font-size: 18px;
+
+    letter-spacing: 6px;
+
+    font-weight: 700;
 }
+
 
 .brand-sub {
-  font-size: 8px;
-  color: var(--muted);
-  letter-spacing: 2px;
-  margin-top: 3px;
+
+    margin-top: 3px;
+
+    font-size: 7px;
+
+    letter-spacing: 3px;
+
+    color:
+        #4e91a9;
 }
 
-.status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: var(--muted);
+.system-status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    font-size: 8px;
+
+    letter-spacing: 2.5px;
+
+    color:
+        #70edff;
 }
 
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--cyan);
 
-  box-shadow:
-    0 0 7px var(--cyan),
-    0 0 15px rgba(0, 220, 255, 0.5);
+.status-light {
 
-  animation: statusPulse 1.5s infinite;
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background:
+        #00ffc8;
+
+    box-shadow:
+        0 0 7px #00ffc8,
+        0 0 18px #00ffc8;
 }
 
-@keyframes statusPulse {
-  50% {
-    opacity: 0.35;
-  }
-}
 
 /* =========================================================
-   GENERIC HUD PANEL
+   HUD SIDE PANELS
    ========================================================= */
 
-.hud-panel {
-  position: absolute;
+.panel {
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(0, 40, 70, 0.48),
-      rgba(1, 10, 23, 0.62)
-    );
+    position: absolute;
 
-  border: 1px solid rgba(0, 210, 255, 0.28);
+    width: 215px;
 
-  backdrop-filter: blur(12px);
+    padding: 12px;
 
-  box-shadow:
-    inset 0 0 25px rgba(0, 170, 255, 0.035),
-    0 0 25px rgba(0, 120, 255, 0.04);
+    z-index: 25;
 
-  overflow: hidden;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(2,34,64,.78),
+            rgba(0,9,21,.67)
+        );
 
-  clip-path:
-    polygon(
-      0 0,
-      calc(100% - 13px) 0,
-      100% 13px,
-      100% 100%,
-      13px 100%,
-      0 calc(100% - 13px)
-    );
+    border:
+        1px solid
+        rgba(0,205,255,.27);
+
+    box-shadow:
+        0 0 25px
+        rgba(0,140,255,.08),
+
+        inset 0 0 20px
+        rgba(0,160,255,.035);
+
+    backdrop-filter:
+        blur(15px);
+
+    overflow: hidden;
 }
 
-.hud-panel::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 14px;
-  right: 14px;
-  height: 1px;
 
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      var(--cyan),
-      transparent
-    );
+.panel::before {
 
-  opacity: 0.5;
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 42%;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--cyan),
+            transparent
+        );
+
+    box-shadow:
+        0 0 8px var(--cyan);
 }
 
-.hud-panel::after {
-  content: "";
-  position: absolute;
-  width: 35%;
-  height: 100%;
-  top: 0;
-  left: -50%;
 
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(0, 220, 255, 0.06),
-      transparent
-    );
+.panel::after {
 
-  transform: skewX(-20deg);
+    content: "";
 
-  animation: panelScan 7s linear infinite;
+    position: absolute;
+
+    right: 0;
+    bottom: 0;
+
+    width: 27%;
+    height: 1px;
+
+    background:
+        rgba(0,220,255,.4);
 }
 
-@keyframes panelScan {
-  0% {
-    left: -50%;
-  }
-
-  100% {
-    left: 150%;
-  }
-}
 
 .panel-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 
-  font-size: 9px;
-  letter-spacing: 2.5px;
-  color: var(--cyan);
+    font-size: 8px;
 
-  margin-bottom: 12px;
+    letter-spacing: 3px;
+
+    color:
+        #65eaff;
+
+    margin-bottom:
+        8px;
 }
 
-.panel-code {
-  color: #397b91;
-  font-size: 7px;
+
+.panel-header-line {
+
+    height: 1px;
+
+    margin:
+        6px 0 9px;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0,220,255,.3),
+            transparent
+        );
 }
+
 
 /* =========================================================
-   TOP LEFT — NEURAL CORE
+   LEFT NEURAL MATRIX
    ========================================================= */
 
-.neural-panel {
-  top: 95px;
-  left: 22px;
-  width: 270px;
-  height: 175px;
+.neural-box {
 
-  padding: 16px;
+    height: 112px;
+
+    position: relative;
 }
 
-.neural-svg {
-  width: 100%;
-  height: 125px;
+
+#neuralCanvas {
+
+    width: 100%;
+    height: 100%;
+
+    display: block;
 }
 
-.neural-line {
-  stroke: var(--blue);
-  stroke-width: 0.8;
-  opacity: 0.48;
+
+.data-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    font-size: 7px;
+
+    color:
+        #477e96;
+
+    margin-top: 5px;
 }
 
-.neural-node {
-  fill: #041a2c;
-  stroke: var(--cyan);
-  stroke-width: 1;
 
-  filter:
-    drop-shadow(
-      0 0 4px rgba(0, 220, 255, 0.7)
-    );
+.data-row strong {
 
-  animation: neuralPulse 2.4s infinite;
+    color:
+        #a9f6ff;
+
+    font-weight: 500;
 }
 
-.neural-node:nth-child(2n) {
-  animation-delay: 0.6s;
-}
-
-.neural-node:nth-child(3n) {
-  animation-delay: 1.1s;
-}
-
-@keyframes neuralPulse {
-  50% {
-    fill: rgba(0, 190, 255, 0.28);
-  }
-}
 
 /* =========================================================
-   TOP RIGHT — AI ANALYTICS
+   ANALYTICS
    ========================================================= */
 
-.analytics-panel {
-  top: 95px;
-  right: 22px;
-  width: 295px;
-  height: 205px;
+.analytics {
 
-  padding: 16px;
+    height: 72px;
+
+    display: flex;
+
+    align-items: flex-end;
+
+    gap: 5px;
 }
 
-.analytics-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
+
+.analytics-bar {
+
+    flex: 1;
+
+    min-height: 8px;
+
+    background:
+        linear-gradient(
+            to top,
+            #0057ff,
+            #00eaff
+        );
+
+    box-shadow:
+        0 0 8px
+        rgba(0,220,255,.55);
+
+    position: relative;
+
+    animation:
+        analyticsPulse
+        1.7s
+        ease-in-out
+        infinite alternate;
 }
 
-.analytics-card {
-  border: 1px solid rgba(0, 200, 255, 0.15);
-  background: rgba(0, 60, 90, 0.12);
 
-  padding: 9px;
+.analytics-bar::after {
 
-  min-height: 55px;
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+
+    left: 0;
+    right: 0;
+
+    height: 1px;
+
+    background:
+        white;
+
+    box-shadow:
+        0 0 7px white;
 }
 
-.analytics-label {
-  font-size: 7px;
-  letter-spacing: 1.5px;
-  color: #568fa2;
+
+.analytics-bar:nth-child(2) {
+    animation-delay: .15s;
 }
 
-.analytics-value {
-  font-size: 15px;
-  margin-top: 5px;
-  color: var(--text);
+.analytics-bar:nth-child(3) {
+    animation-delay: .30s;
 }
 
-.analytics-bars {
-  height: 38px;
-
-  display: flex;
-  align-items: end;
-  gap: 4px;
-
-  margin-top: 10px;
+.analytics-bar:nth-child(4) {
+    animation-delay: .45s;
 }
 
-.analytics-bars span {
-  flex: 1;
-  background: linear-gradient(
-    to top,
-    rgba(0, 120, 255, 0.25),
-    var(--cyan)
-  );
-
-  min-height: 4px;
-
-  animation: bars 1.5s ease-in-out infinite alternate;
+.analytics-bar:nth-child(5) {
+    animation-delay: .60s;
 }
 
-.analytics-bars span:nth-child(1) {
-  height: 30%;
+.analytics-bar:nth-child(6) {
+    animation-delay: .75s;
 }
 
-.analytics-bars span:nth-child(2) {
-  height: 55%;
-  animation-delay: .1s;
-}
-
-.analytics-bars span:nth-child(3) {
-  height: 38%;
-  animation-delay: .2s;
-}
-
-.analytics-bars span:nth-child(4) {
-  height: 80%;
-  animation-delay: .3s;
-}
-
-.analytics-bars span:nth-child(5) {
-  height: 60%;
-  animation-delay: .4s;
-}
-
-.analytics-bars span:nth-child(6) {
-  height: 92%;
-  animation-delay: .5s;
-}
-
-.analytics-bars span:nth-child(7) {
-  height: 45%;
-  animation-delay: .6s;
-}
-
-.analytics-bars span:nth-child(8) {
-  height: 72%;
-  animation-delay: .7s;
-}
-
-@keyframes bars {
-  to {
-    transform: scaleY(.55);
-  }
-}
 
 /* =========================================================
-   CENTRAL AI CORE
+   CENTER 3D CORE
    ========================================================= */
 
-.center {
-  position: absolute;
-  left: 50%;
-  top: 50%;
+.core-stage {
 
-  transform: translate(-50%, -50%);
+    position: absolute;
 
-  width: min(560px, 54vw);
-  height: min(560px, 54vw);
+    left: 50%;
+    top: 51%;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width:
+        min(510px, 76vw);
 
-  z-index: 10;
+    height:
+        min(510px, 76vw);
 
-  transition: transform .35s ease;
+    transform:
+        translate(-50%,-50%);
+
+    z-index: 10;
+
+    perspective:
+        1100px;
+
+    transform-style:
+        preserve-3d;
 }
 
-.center::before {
-  content: "";
-  position: absolute;
-  inset: 12%;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(0, 190, 255, 0.09),
-      transparent 63%
-    );
-
-  filter: blur(3px);
-}
 
 /* =========================================================
-   ORBITAL SYSTEM
+   CORE AURA
    ========================================================= */
 
-.reactor {
-  position: relative;
+.core-aura {
 
-  width: 280px;
-  height: 280px;
+    position: absolute;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    left: 50%;
+    top: 50%;
 
-  transition: transform .4s ease;
+    width: 65%;
+    height: 65%;
+
+    transform:
+        translate(-50%,-50%);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,240,255,.27),
+            rgba(0,90,255,.13) 32%,
+            transparent 72%
+        );
+
+    filter:
+        blur(26px);
+
+    animation:
+        auraPulse 3.5s infinite;
 }
 
-.ring {
-  position: absolute;
-
-  border-radius: 50%;
-
-  border: 1px solid rgba(0, 210, 255, 0.42);
-
-  box-shadow:
-    0 0 15px rgba(0, 180, 255, 0.08),
-    inset 0 0 15px rgba(0, 180, 255, 0.04);
-}
-
-.ring.one {
-  width: 280px;
-  height: 280px;
-
-  border-top-color: var(--cyan);
-  border-bottom-color: transparent;
-
-  animation:
-    spin 15s linear infinite;
-}
-
-.ring.two {
-  width: 225px;
-  height: 225px;
-
-  border-left-color: var(--blue);
-  border-right-color: transparent;
-
-  animation:
-    spinReverse 11s linear infinite;
-}
-
-.ring.three {
-  width: 175px;
-  height: 175px;
-
-  border-top-color: rgba(0, 234, 255, 0.8);
-  border-bottom-color: transparent;
-
-  animation:
-    spin 8s linear infinite;
-}
-
-.ring.four {
-  width: 130px;
-  height: 130px;
-
-  border-left-color: rgba(0, 150, 255, 0.8);
-  border-right-color: transparent;
-
-  animation:
-    spinReverse 6s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes spinReverse {
-  to {
-    transform: rotate(-360deg);
-  }
-}
 
 /* =========================================================
-   ORBITAL NODES
+   OUTER ORBIT SYSTEM
+   ========================================================= */
+
+.orbit {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    border:
+        1px solid
+        rgba(0,220,255,.28);
+
+    border-radius: 50%;
+
+    transform-style:
+        preserve-3d;
+
+    box-shadow:
+        0 0 12px
+        rgba(0,200,255,.09);
+}
+
+
+.orbit-a {
+
+    width: 100%;
+    height: 31%;
+
+    transform:
+        translate(-50%,-50%)
+        rotateX(72deg);
+
+    animation:
+        orbitA 11s linear infinite;
+}
+
+
+.orbit-b {
+
+    width: 76%;
+    height: 76%;
+
+    transform:
+        translate(-50%,-50%)
+        rotateX(67deg)
+        rotateY(28deg);
+
+    animation:
+        orbitB 15s linear infinite;
+}
+
+
+.orbit-c {
+
+    width: 52%;
+    height: 100%;
+
+    transform:
+        translate(-50%,-50%)
+        rotateY(72deg)
+        rotateZ(19deg);
+
+    animation:
+        orbitC 18s linear infinite;
+}
+
+
+.orbit-d {
+
+    width: 112%;
+    height: 112%;
+
+    transform:
+        translate(-50%,-50%)
+        rotateX(77deg)
+        rotateZ(37deg);
+
+    border-color:
+        rgba(0,120,255,.14);
+
+    animation:
+        orbitD 27s linear infinite reverse;
+}
+
+
+/* =========================================================
+   ORBITING NODES
    ========================================================= */
 
 .orbit-node {
-  position: absolute;
 
-  width: 7px;
-  height: 7px;
+    position: absolute;
 
-  border-radius: 50%;
+    width: 6px;
+    height: 6px;
 
-  background: var(--cyan);
+    border-radius: 50%;
 
-  box-shadow:
-    0 0 7px var(--cyan),
-    0 0 17px rgba(0, 200, 255, 0.7);
+    background:
+        var(--cyan);
+
+    box-shadow:
+        0 0 7px var(--cyan),
+        0 0 20px var(--blue);
 }
 
-.node-a {
-  top: 22px;
-  left: 136px;
+
+.orbit-node.n1 {
+    left: 14%;
+    top: 42%;
 }
 
-.node-b {
-  right: 26px;
-  top: 135px;
+
+.orbit-node.n2 {
+    right: 16%;
+    top: 20%;
 }
 
-.node-c {
-  bottom: 24px;
-  left: 134px;
+
+.orbit-node.n3 {
+    right: 10%;
+    bottom: 20%;
 }
 
-.node-d {
-  left: 27px;
-  top: 135px;
+
+.orbit-node.n4 {
+    left: 23%;
+    bottom: 13%;
 }
+
+
+.orbit-node.n5 {
+    left: 46%;
+    top: 3%;
+}
+
 
 /* =========================================================
-   CORE
+   CENTRAL ENERGY GLOBE
    ========================================================= */
 
-.core {
-  width: 96px;
-  height: 96px;
+.energy-core {
 
-  border-radius: 50%;
+    position: absolute;
 
-  position: relative;
+    left: 50%;
+    top: 50%;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 145px;
+    height: 145px;
 
-  background:
-    radial-gradient(
-      circle,
-      rgba(0, 234, 255, 0.34),
-      rgba(0, 50, 100, 0.24) 45%,
-      transparent 72%
-    );
+    transform:
+        translate(-50%,-50%)
+        translateZ(90px);
 
-  border: 1px solid rgba(0, 234, 255, 0.85);
+    border-radius: 50%;
 
-  box-shadow:
-    0 0 20px rgba(0, 200, 255, 0.5),
-    0 0 60px rgba(0, 130, 255, 0.28),
-    inset 0 0 25px rgba(0, 220, 255, 0.35);
+    background:
+        radial-gradient(
+            circle at 31% 25%,
+            #ffffff 0%,
+            #b8fbff 3%,
+            #36eaff 8%,
+            #00a8ff 18%,
+            #0062ff 35%,
+            #00307e 62%,
+            #000817 100%
+        );
 
-  animation: corePulse 2.4s infinite;
+    box-shadow:
+
+        inset
+        -28px -18px 40px
+        rgba(0,0,0,.78),
+
+        inset
+        9px 7px 25px
+        rgba(0,240,255,.45),
+
+        0 0 25px
+        rgba(0,240,255,.95),
+
+        0 0 70px
+        rgba(0,100,255,.65),
+
+        0 0 130px
+        rgba(0,80,255,.22);
+
+    animation:
+        coreFloat 4.5s ease-in-out infinite;
+
+    overflow:
+        hidden;
 }
 
-.core::before {
-  content: "";
 
-  position: absolute;
-  width: 38px;
-  height: 38px;
+/* globe longitude lines */
 
-  border-radius: 50%;
+.energy-core::before {
 
-  border: 1px solid var(--cyan);
+    content: "";
 
-  box-shadow:
-    0 0 14px var(--cyan),
-    inset 0 0 12px var(--cyan);
+    position: absolute;
 
-  animation: coreInner 2s infinite;
+    inset: -20px;
+
+    border-radius: 50%;
+
+    background:
+
+        repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent 17px,
+            rgba(0,245,255,.18) 18px,
+            transparent 19px
+        );
+
+    transform:
+        rotate(17deg);
+
+    animation:
+        globeLines 7s linear infinite;
 }
 
-.core::after {
-  content: "";
 
-  position: absolute;
+/* globe latitude lines */
 
-  width: 10px;
-  height: 10px;
+.energy-core::after {
 
-  border-radius: 50%;
+    content: "";
 
-  background: white;
+    position: absolute;
 
-  box-shadow:
-    0 0 8px white,
-    0 0 20px var(--cyan);
+    inset: 14px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid
+        rgba(210,255,255,.52);
+
+    box-shadow:
+        0 0 18px
+        rgba(0,230,255,.35),
+
+        inset 0 0 18px
+        rgba(0,230,255,.28);
 }
 
-@keyframes corePulse {
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-@keyframes coreInner {
-  50% {
-    transform: rotate(180deg) scale(.8);
-  }
-}
 
 /* =========================================================
-   SYSTEM TEXT
+   CORE INNER RINGS
    ========================================================= */
 
-.system-text {
-  position: absolute;
+.core-inner-ring {
 
-  bottom: 17%;
+    position: absolute;
 
-  left: 50%;
+    left: 50%;
+    top: 50%;
 
-  transform: translateX(-50%);
+    border-radius: 50%;
 
-  text-align: center;
+    border:
+        1px solid
+        rgba(0,245,255,.55);
 
-  width: 400px;
+    transform:
+        translate(-50%,-50%);
 
-  pointer-events: none;
+    z-index: 4;
 }
 
-.system-title {
-  font-size: 12px;
 
-  letter-spacing: 5px;
+.inner-1 {
 
-  color: var(--cyan);
+    width: 165px;
+    height: 165px;
 
-  text-shadow:
-    0 0 10px rgba(0, 220, 255, 0.7);
+    animation:
+        innerSpin 8s linear infinite;
 }
 
-.system-message {
-  margin-top: 8px;
 
-  font-size: 10px;
+.inner-2 {
 
-  color: #629caf;
+    width: 205px;
+    height: 205px;
 
-  letter-spacing: 1.5px;
+    border-style:
+        dashed;
 
-  min-height: 16px;
+    opacity:
+        .55;
+
+    animation:
+        innerSpin 13s linear infinite reverse;
 }
+
+
+.inner-3 {
+
+    width: 245px;
+    height: 245px;
+
+    border-color:
+        rgba(0,140,255,.24);
+
+    animation:
+        innerSpin 21s linear infinite;
+}
+
 
 /* =========================================================
-   BOTTOM LEFT — VOICE ANALYZER
+   CORE TARGETING CROSSHAIR
    ========================================================= */
 
-.voice-panel {
-  left: 22px;
-  bottom: 110px;
+.crosshair {
 
-  width: 300px;
-  height: 175px;
+    position: absolute;
 
-  padding: 16px;
+    left: 50%;
+    top: 50%;
+
+    width: 205px;
+    height: 205px;
+
+    transform:
+        translate(-50%,-50%);
+
+    z-index: 8;
+
+    pointer-events: none;
 }
+
+
+.crosshair::before,
+.crosshair::after {
+
+    content: "";
+
+    position: absolute;
+
+    background:
+        rgba(0,230,255,.65);
+
+    box-shadow:
+        0 0 6px
+        rgba(0,230,255,.65);
+}
+
+
+.crosshair::before {
+
+    left: 50%;
+    top: 0;
+
+    width: 1px;
+    height: 100%;
+}
+
+
+.crosshair::after {
+
+    left: 0;
+    top: 50%;
+
+    width: 100%;
+    height: 1px;
+}
+
+
+/* =========================================================
+   CORE DATA MARKERS
+   ========================================================= */
+
+.core-marker {
+
+    position: absolute;
+
+    z-index: 12;
+
+    font-size: 6px;
+
+    letter-spacing: 1.5px;
+
+    color:
+        #59dff3;
+
+    white-space:
+        nowrap;
+
+    opacity:
+        .75;
+}
+
+
+.cm1 {
+    left: 6%;
+    top: 42%;
+}
+
+
+.cm2 {
+    right: 2%;
+    top: 34%;
+}
+
+
+.cm3 {
+    right: 11%;
+    bottom: 25%;
+}
+
+
+.cm4 {
+    left: 8%;
+    bottom: 27%;
+}
+
+
+/* =========================================================
+   CORE LABEL
+   ========================================================= */
+
+.core-label {
+
+    position: absolute;
+
+    left: 50%;
+    top: 78%;
+
+    transform:
+        translateX(-50%);
+
+    text-align: center;
+
+    z-index: 20;
+
+    font-size: 10px;
+
+    letter-spacing: 6px;
+
+    color:
+        #69efff;
+
+    text-shadow:
+        0 0 12px #00dfff;
+
+    white-space:
+        nowrap;
+}
+
+
+.core-state {
+
+    margin-top: 8px;
+
+    font-size: 7px;
+
+    letter-spacing: 3px;
+
+    color:
+        #4b8aa2;
+}
+
+
+/* =========================================================
+   SCANNER
+   ========================================================= */
+
+.scanner {
+
+    position: relative;
+
+    width: 104px;
+    height: 104px;
+
+    margin:
+        3px auto 5px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0,230,255,.13),
+            transparent 68%
+        );
+
+    border:
+        1px solid
+        rgba(0,220,255,.4);
+
+    box-shadow:
+        inset 0 0 20px
+        rgba(0,180,255,.1);
+}
+
+
+.scan-circle {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%,-50%);
+
+    border:
+        1px solid
+        rgba(0,220,255,.22);
+
+    border-radius: 50%;
+}
+
+
+.scan-circle.s1 {
+    width: 30px;
+    height: 30px;
+}
+
+.scan-circle.s2 {
+    width: 60px;
+    height: 60px;
+}
+
+.scan-circle.s3 {
+    width: 88px;
+    height: 88px;
+}
+
+
+.scan-line {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 50px;
+    height: 1px;
+
+    transform-origin:
+        left center;
+
+    background:
+        linear-gradient(
+            90deg,
+            #00eaff,
+            transparent
+        );
+
+    box-shadow:
+        0 0 8px #00eaff;
+
+    animation:
+        scanRotate 2s linear infinite;
+}
+
+
+.scan-line::after {
+
+    content: "";
+
+    position: absolute;
+
+    right: 0;
+    top: -25px;
+
+    width: 48px;
+    height: 50px;
+
+    background:
+        conic-gradient(
+            from 0deg,
+            rgba(0,240,255,.15),
+            transparent 45%
+        );
+}
+
+
+/* =========================================================
+   TARGETS
+   ========================================================= */
+
+.scan-target {
+
+    position: absolute;
+
+    width: 17px;
+    height: 17px;
+
+    border:
+        1px solid
+        var(--cyan);
+
+    box-shadow:
+        0 0 9px
+        rgba(0,230,255,.65);
+
+    animation:
+        targetBlink 1.3s infinite;
+}
+
+
+.scan-target::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 4px;
+    height: 1px;
+
+    left: -4px;
+    top: 7px;
+
+    background:
+        var(--cyan);
+}
+
+
+.scan-target::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 1px;
+    height: 4px;
+
+    left: 7px;
+    top: -4px;
+
+    background:
+        var(--cyan);
+}
+
+
+.target-a {
+
+    left: 20px;
+    top: 26px;
+}
+
+
+.target-b {
+
+    right: 15px;
+    bottom: 18px;
+
+    animation-delay:
+        .55s;
+}
+
+
+.target-text {
+
+    position: absolute;
+
+    font-size: 5px;
+
+    letter-spacing: 1px;
+
+    color:
+        #6beaff;
+
+    white-space:
+        nowrap;
+}
+
+
+.target-a .target-text {
+
+    right: 19px;
+    top: -2px;
+}
+
+
+.target-b .target-text {
+
+    left: 18px;
+    bottom: -2px;
+}
+
+
+/* =========================================================
+   VOICE VISUALIZER
+   ========================================================= */
 
 .voice-wave {
-  position: relative;
 
-  width: 100%;
-  height: 70px;
+    height: 58px;
 
-  display: flex;
+    display:
+        flex;
 
-  align-items: center;
-  justify-content: center;
+    align-items:
+        center;
 
-  gap: 3px;
+    justify-content:
+        center;
 
-  overflow: hidden;
+    gap: 3px;
 }
+
 
 .voice-wave span {
-  display: block;
 
-  width: 3px;
+    width: 3px;
 
-  height: 12px;
+    height: 15px;
 
-  border-radius: 3px;
+    background:
+        linear-gradient(
+            to top,
+            #0066ff,
+            #00eaff
+        );
 
-  background: var(--cyan);
+    box-shadow:
+        0 0 7px
+        #00eaff;
 
-  box-shadow:
-    0 0 7px rgba(0, 220, 255, 0.7);
-
-  animation: waveform 1s ease-in-out infinite;
+    animation:
+        voiceWave .9s ease-in-out infinite;
 }
 
-.voice-wave span:nth-child(1) { animation-delay: -.8s; }
-.voice-wave span:nth-child(2) { animation-delay: -.5s; }
-.voice-wave span:nth-child(3) { animation-delay: -.2s; }
-.voice-wave span:nth-child(4) { animation-delay: -.7s; }
-.voice-wave span:nth-child(5) { animation-delay: -.3s; }
-.voice-wave span:nth-child(6) { animation-delay: -.9s; }
-.voice-wave span:nth-child(7) { animation-delay: -.4s; }
-.voice-wave span:nth-child(8) { animation-delay: -.1s; }
-.voice-wave span:nth-child(9) { animation-delay: -.6s; }
-.voice-wave span:nth-child(10) { animation-delay: -.2s; }
-.voice-wave span:nth-child(11) { animation-delay: -.7s; }
-.voice-wave span:nth-child(12) { animation-delay: -.4s; }
-.voice-wave span:nth-child(13) { animation-delay: -.8s; }
-.voice-wave span:nth-child(14) { animation-delay: -.3s; }
-.voice-wave span:nth-child(15) { animation-delay: -.6s; }
-.voice-wave span:nth-child(16) { animation-delay: -.1s; }
-.voice-wave span:nth-child(17) { animation-delay: -.5s; }
-.voice-wave span:nth-child(18) { animation-delay: -.2s; }
-.voice-wave span:nth-child(19) { animation-delay: -.9s; }
-.voice-wave span:nth-child(20) { animation-delay: -.4s; }
 
-@keyframes waveform {
-  0%,
-  100% {
-    height: 8px;
-    opacity: .4;
-  }
-
-  50% {
-    height: 52px;
-    opacity: 1;
-  }
+.voice-wave span:nth-child(1) {
+    animation-delay: .00s;
 }
 
-.voice-status {
-  display: flex;
-  justify-content: space-between;
-
-  font-size: 8px;
-
-  color: #538a9e;
-
-  letter-spacing: 1.5px;
+.voice-wave span:nth-child(2) {
+    animation-delay: .08s;
 }
+
+.voice-wave span:nth-child(3) {
+    animation-delay: .16s;
+}
+
+.voice-wave span:nth-child(4) {
+    animation-delay: .24s;
+}
+
+.voice-wave span:nth-child(5) {
+    animation-delay: .32s;
+}
+
+.voice-wave span:nth-child(6) {
+    animation-delay: .40s;
+}
+
+.voice-wave span:nth-child(7) {
+    animation-delay: .48s;
+}
+
+.voice-wave span:nth-child(8) {
+    animation-delay: .56s;
+}
+
+.voice-wave span:nth-child(9) {
+    animation-delay: .64s;
+}
+
+.voice-wave span:nth-child(10) {
+    animation-delay: .72s;
+}
+
+.voice-wave span:nth-child(11) {
+    animation-delay: .80s;
+}
+
 
 /* =========================================================
-   BOTTOM RIGHT — RADAR
+   MINI EARTH
    ========================================================= */
 
-.radar-panel {
-  right: 22px;
-  bottom: 110px;
+.earth-hud {
 
-  width: 280px;
-  height: 210px;
+    position: absolute;
 
-  padding: 16px;
+    right: 14px;
+
+    bottom: 207px;
+
+    width: 180px;
+    height: 180px;
+
+    z-index: 27;
+
+    pointer-events: none;
 }
 
-.radar {
-  width: 145px;
-  height: 145px;
 
-  margin: 0 auto;
+.earth-title {
 
-  border-radius: 50%;
+    position: absolute;
 
-  position: relative;
+    left: 4px;
+    top: 0;
 
-  background:
-    radial-gradient(
-      circle,
-      transparent 0 22%,
-      rgba(0, 200, 255, .05) 23% 24%,
-      transparent 25% 44%,
-      rgba(0, 200, 255, .05) 45% 46%,
-      transparent 47% 68%,
-      rgba(0, 200, 255, .05) 69% 70%,
-      transparent 71%
-    );
+    font-size: 6px;
 
-  border: 1px solid rgba(0, 220, 255, .35);
+    letter-spacing: 2px;
 
-  box-shadow:
-    0 0 25px rgba(0, 170, 255, .08),
-    inset 0 0 25px rgba(0, 170, 255, .05);
-
-  overflow: hidden;
+    color:
+        #5ddff5;
 }
 
-.radar::before {
-  content: "";
 
-  position: absolute;
+.earth {
 
-  width: 50%;
-  height: 1px;
+    position: absolute;
 
-  left: 50%;
-  top: 50%;
+    left: 50%;
+    top: 50%;
 
-  transform-origin: left center;
+    width: 112px;
+    height: 112px;
 
-  background:
-    linear-gradient(
-      90deg,
-      var(--cyan),
-      transparent
-    );
+    transform:
+        translate(-50%,-50%);
 
-  box-shadow:
-    0 0 8px var(--cyan);
+    border-radius: 50%;
 
-  animation: radarSweep 3s linear infinite;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 31% 25%,
+            #d8ffff 0%,
+            #6df6ff 3%,
+            #00cfff 8%,
+            #0082ff 22%,
+            #00479e 44%,
+            #001c4a 70%,
+            #000916 100%
+        );
+
+    border:
+        1px solid
+        rgba(0,235,255,.8);
+
+    box-shadow:
+
+        inset
+        -25px -14px 35px
+        rgba(0,0,0,.75),
+
+        inset
+        9px 8px 20px
+        rgba(0,240,255,.38),
+
+        0 0 20px
+        rgba(0,220,255,.7),
+
+        0 0 55px
+        rgba(0,80,255,.3);
 }
 
-.radar::after {
-  content: "";
-
-  position: absolute;
-
-  left: 50%;
-  top: 0;
-  bottom: 0;
-
-  width: 1px;
-
-  background:
-    rgba(0, 220, 255, .14);
-}
-
-.radar-horizontal {
-  position: absolute;
-
-  top: 50%;
-  left: 0;
-  right: 0;
-
-  height: 1px;
-
-  background:
-    rgba(0, 220, 255, .14);
-}
-
-@keyframes radarSweep {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.radar-dot {
-  position: absolute;
-
-  width: 5px;
-  height: 5px;
-
-  border-radius: 50%;
-
-  background: var(--cyan);
-
-  box-shadow:
-    0 0 9px var(--cyan);
-
-  animation: radarDot 1.8s infinite;
-}
-
-.radar-dot.one {
-  left: 68%;
-  top: 31%;
-}
-
-.radar-dot.two {
-  left: 27%;
-  top: 64%;
-
-  animation-delay: .6s;
-}
-
-.radar-dot.three {
-  left: 73%;
-  top: 73%;
-
-  animation-delay: 1s;
-}
-
-@keyframes radarDot {
-  50% {
-    transform: scale(1.8);
-    opacity: .45;
-  }
-}
 
 /* =========================================================
-   BOTTOM COMMAND AREA
+   EARTH GRID
    ========================================================= */
 
-.bottom {
-  position: absolute;
+.earth-grid {
 
-  left: 22px;
-  right: 22px;
-  bottom: 18px;
+    position: absolute;
 
-  z-index: 40;
+    inset: -10px;
+
+    border-radius: 50%;
+
+    background:
+
+        repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent 15px,
+            rgba(0,245,255,.16) 16px,
+            transparent 17px
+        );
+
+    animation:
+        earthGridSpin 8s linear infinite;
 }
 
-.command-row {
-  height: 54px;
 
-  display: flex;
+.earth-lat {
 
-  gap: 8px;
+    position: absolute;
+
+    left: -10px;
+
+    width: 132px;
+
+    height: 35px;
+
+    border:
+        1px solid
+        rgba(0,245,255,.22);
+
+    border-radius: 50%;
 }
+
+
+.lat1 {
+    top: 27px;
+}
+
+.lat2 {
+    top: 49px;
+}
+
+.lat3 {
+    top: 70px;
+}
+
+
+/* =========================================================
+   EARTH LAND
+   ========================================================= */
+
+.land {
+
+    position: absolute;
+
+    background:
+        rgba(0,240,255,.24);
+
+    box-shadow:
+        0 0 8px
+        rgba(0,240,255,.25);
+
+    filter:
+        blur(.25px);
+}
+
+
+.land.l1 {
+
+    left: 16px;
+    top: 24px;
+
+    width: 40px;
+    height: 20px;
+
+    border-radius:
+        65% 35% 55% 35%;
+
+    transform:
+        rotate(-14deg);
+}
+
+
+.land.l2 {
+
+    left: 54px;
+    top: 27px;
+
+    width: 29px;
+    height: 36px;
+
+    border-radius:
+        45% 35% 65% 35%;
+
+    transform:
+        rotate(18deg);
+}
+
+
+.land.l3 {
+
+    left: 36px;
+    top: 61px;
+
+    width: 19px;
+    height: 31px;
+
+    border-radius:
+        45% 60% 35% 60%;
+}
+
+
+.land.l4 {
+
+    right: 7px;
+    top: 63px;
+
+    width: 27px;
+    height: 16px;
+
+    border-radius:
+        55% 35% 60% 35%;
+}
+
+
+/* =========================================================
+   EARTH NODES
+   ========================================================= */
+
+.earth-node {
+
+    position: absolute;
+
+    width: 4px;
+    height: 4px;
+
+    border-radius: 50%;
+
+    background:
+        #00ffff;
+
+    box-shadow:
+        0 0 7px
+        #00ffff;
+
+    z-index: 4;
+}
+
+
+.en1 {
+    left: 28px;
+    top: 42px;
+}
+
+.en2 {
+    left: 68px;
+    top: 38px;
+}
+
+.en3 {
+    left: 47px;
+    top: 72px;
+}
+
+.en4 {
+    left: 87px;
+    top: 59px;
+}
+
+.en5 {
+    left: 73px;
+    top: 83px;
+}
+
+
+/* =========================================================
+   EARTH DATA CONNECTIONS
+   ========================================================= */
+
+.earth-link {
+
+    position: absolute;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #00eaff,
+            transparent
+        );
+
+    transform-origin:
+        left center;
+
+    opacity:
+        .5;
+}
+
+
+.el1 {
+
+    left: 29px;
+    top: 43px;
+
+    width: 42px;
+
+    transform:
+        rotate(-5deg);
+}
+
+
+.el2 {
+
+    left: 48px;
+    top: 73px;
+
+    width: 42px;
+
+    transform:
+        rotate(-24deg);
+}
+
+
+/* =========================================================
+   EARTH ORBITS
+   ========================================================= */
+
+.earth-orbit {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 160px;
+    height: 50px;
+
+    transform:
+        translate(-50%,-50%)
+        rotateX(65deg);
+
+    border:
+        1px solid
+        rgba(0,220,255,.35);
+
+    border-radius: 50%;
+
+    animation:
+        earthOrbit 7s linear infinite;
+}
+
+
+.earth-orbit.two {
+
+    width: 138px;
+    height: 90px;
+
+    transform:
+        translate(-50%,-50%)
+        rotateY(65deg)
+        rotateZ(25deg);
+
+    animation-duration:
+        11s;
+}
+
+
+/* =========================================================
+   SATELLITES
+   ========================================================= */
+
+.satellite {
+
+    position: absolute;
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background:
+        white;
+
+    box-shadow:
+        0 0 8px
+        #00eaff,
+
+        0 0 18px
+        #00aaff;
+}
+
+
+.satellite.s1 {
+
+    left: 4px;
+    top: 17px;
+}
+
+
+.satellite.s2 {
+
+    right: 5px;
+    top: 25px;
+}
+
+
+/* =========================================================
+   AIRCRAFT
+   ========================================================= */
+
+.aircraft {
+
+    position: absolute;
+
+    width: 4px;
+    height: 4px;
+
+    border-radius: 50%;
+
+    background:
+        #00ffff;
+
+    box-shadow:
+        0 0 7px #00ffff;
+
+    animation:
+        aircraftMove 4.5s linear infinite;
+}
+
+
+.air1 {
+    left: 10px;
+    top: 62px;
+}
+
+.air2 {
+    left: 82px;
+    top: 28px;
+    animation-delay: 1.2s;
+}
+
+.air3 {
+    left: 65px;
+    top: 98px;
+    animation-delay: 2.2s;
+}
+
+
+/* =========================================================
+   EARTH TELEMETRY
+   ========================================================= */
+
+.earth-telemetry {
+
+    position: absolute;
+
+    left: -4px;
+    bottom: -1px;
+
+    font-size: 5px;
+
+    line-height: 1.7;
+
+    letter-spacing: 1px;
+
+    color:
+        #4a8ca4;
+}
+
+
+.earth-telemetry b {
+
+    color:
+        #65eaff;
+}
+
+
+/* =========================================================
+   BOTTOM COMMAND SYSTEM
+   ========================================================= */
+
+.command-area {
+
+    position: absolute;
+
+    left: 50%;
+    bottom: 15px;
+
+    transform:
+        translateX(-50%);
+
+    width:
+        min(650px, calc(100% - 30px));
+
+    display:
+        flex;
+
+    gap: 7px;
+
+    z-index: 50;
+}
+
 
 .command-input {
-  flex: 1;
 
-  min-width: 0;
+    flex: 1;
 
-  border: 1px solid rgba(0, 210, 255, 0.28);
+    min-width: 0;
 
-  outline: none;
+    height: 46px;
 
-  color: var(--text);
+    padding:
+        0 15px;
 
-  background:
-    rgba(1, 16, 29, 0.78);
+    border:
+        1px solid
+        rgba(0,215,255,.38);
 
-  backdrop-filter: blur(12px);
+    outline:
+        none;
 
-  padding: 0 18px;
+    color:
+        #d9fbff;
 
-  font-size: 12px;
+    background:
+        rgba(0,8,20,.88);
 
-  letter-spacing: .7px;
+    box-shadow:
+        inset
+        0 0 18px
+        rgba(0,150,255,.07);
 
-  clip-path:
-    polygon(
-      0 0,
-      calc(100% - 12px) 0,
-      100% 12px,
-      100% 100%,
-      12px 100%,
-      0 calc(100% - 12px)
-    );
+    font-size:
+        11px;
 }
+
 
 .command-input::placeholder {
-  color: #426f80;
+
+    color:
+        #3e687d;
 }
+
 
 .command-input:focus {
-  border-color: rgba(0, 230, 255, .65);
 
-  box-shadow:
-    0 0 20px rgba(0, 190, 255, .08);
+    border-color:
+        #00eaff;
+
+    box-shadow:
+        0 0 18px
+        rgba(0,220,255,.15),
+
+        inset
+        0 0 18px
+        rgba(0,150,255,.08);
 }
 
-button {
-  border: 1px solid rgba(0, 210, 255, .35);
 
-  background:
-    rgba(0, 60, 90, .25);
+.btn {
 
-  color: var(--cyan);
+    height: 46px;
 
-  cursor: pointer;
+    padding:
+        0 16px;
 
-  font-size: 9px;
+    border:
+        1px solid
+        rgba(0,215,255,.38);
 
-  letter-spacing: 1.5px;
+    background:
+        rgba(0,80,145,.27);
 
-  padding: 0 20px;
+    color:
+        #9cefff;
 
-  transition:
-    background .2s,
-    box-shadow .2s,
-    transform .2s;
+    font-size:
+        8px;
+
+    letter-spacing:
+        2px;
+
+    cursor:
+        pointer;
+
+    transition:
+        .2s;
+
+    box-shadow:
+        inset 0 0 12px
+        rgba(0,180,255,.05);
 }
 
-button:hover {
-  background:
-    rgba(0, 150, 220, .18);
 
-  box-shadow:
-    0 0 18px rgba(0, 210, 255, .14);
+.btn:hover {
+
+    background:
+        rgba(0,150,255,.22);
+
+    box-shadow:
+        0 0 18px
+        rgba(0,220,255,.22);
 }
 
-button:active {
-  transform: scale(.97);
+
+.btn:active {
+
+    transform:
+        translateY(1px);
 }
 
-.voice {
-  min-width: 75px;
-}
-
-.voice.active {
-  background:
-    rgba(0, 200, 255, .22);
-
-  box-shadow:
-    0 0 20px rgba(0, 220, 255, .25);
-}
 
 /* =========================================================
-   LOG
+   TINY HUD READOUTS
    ========================================================= */
 
-.log {
-  position: absolute;
+.readout {
 
-  left: 50%;
+    position: absolute;
 
-  bottom: 78px;
+    z-index: 20;
 
-  transform: translateX(-50%);
+    font-family:
+        monospace;
 
-  width: min(650px, 70vw);
+    font-size: 6px;
 
-  max-height: 100px;
+    line-height: 1.7;
 
-  overflow: hidden;
+    letter-spacing: 1px;
 
-  pointer-events: none;
+    color:
+        rgba(72,164,190,.65);
 
-  text-align: center;
+    pointer-events:
+        none;
 }
 
-.log-line {
-  font-size: 9px;
 
-  color: #477e91;
+.readout.r1 {
 
-  margin-top: 5px;
+    left: 32%;
 
-  letter-spacing: .8px;
+    top: 18%;
 
-  animation: logIn .25s ease-out;
+    transform:
+        rotate(-4deg);
 }
 
-.log-line.user {
-  color: #68b6ca;
+
+.readout.r2 {
+
+    right: 31%;
+
+    top: 20%;
+
+    transform:
+        rotate(3deg);
 }
 
-.log-line.jarvis {
-  color: #8ddfff;
+
+.readout.r3 {
+
+    left: 34%;
+
+    bottom: 24%;
 }
 
-@keyframes logIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.readout b {
+
+    color:
+        rgba(82,224,244,.85);
 }
+
 
 /* =========================================================
-   STATES
+   STATE EFFECTS
    ========================================================= */
 
-.center.thinking .ring {
-  animation-duration: 3s;
+body.listening
+.energy-core {
+
+    box-shadow:
+
+        inset
+        -28px -18px 40px
+        rgba(0,0,0,.7),
+
+        0 0 40px
+        #00ffff,
+
+        0 0 100px
+        #008cff;
 }
 
-.center.thinking .core {
-  animation-duration: .8s;
+
+body.thinking
+.orbit {
+
+    animation-duration:
+        3s !important;
 }
 
-.reactor.listening {
-  transform: scale(1.05);
+
+body.thinking
+.energy-core {
+
+    animation-duration:
+        1.8s;
 }
 
-.reactor.listening .core {
-  box-shadow:
-    0 0 30px rgba(0, 230, 255, .75),
-    0 0 80px rgba(0, 150, 255, .35),
-    inset 0 0 30px rgba(0, 230, 255, .5);
-}
-
-.reactor.listening .ring {
-  border-color: rgba(0, 240, 255, .7);
-}
 
 /* =========================================================
-   SMALL DECORATIVE HUD MARKERS
+   ANIMATIONS
    ========================================================= */
 
-.marker {
-  position: absolute;
+@keyframes systemPulse {
 
-  color: rgba(0, 210, 255, .3);
+    0%,100% {
+        transform: scale(1);
+    }
 
-  font-size: 7px;
-
-  letter-spacing: 2px;
-
-  pointer-events: none;
+    50% {
+        transform: scale(1.3);
+    }
 }
 
-.marker.one {
-  left: 47%;
-  top: 17%;
+
+@keyframes miniSpin {
+
+    from {
+        transform:
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            rotate(360deg);
+    }
 }
 
-.marker.two {
-  right: 32%;
-  top: 42%;
+
+@keyframes auraPulse {
+
+    0%,100% {
+        opacity: .55;
+        transform:
+            translate(-50%,-50%)
+            scale(.9);
+    }
+
+    50% {
+        opacity: 1;
+        transform:
+            translate(-50%,-50%)
+            scale(1.12);
+    }
 }
 
-.marker.three {
-  left: 35%;
-  bottom: 34%;
+
+@keyframes coreFloat {
+
+    0%,100% {
+        transform:
+            translate(-50%,-50%)
+            translateZ(90px)
+            translateY(0);
+    }
+
+    50% {
+        transform:
+            translate(-50%,-50%)
+            translateZ(90px)
+            translateY(-7px);
+    }
 }
 
-.marker.four {
-  right: 41%;
-  bottom: 30%;
+
+@keyframes globeLines {
+
+    from {
+        transform:
+            rotate(17deg)
+            translateX(0);
+    }
+
+    to {
+        transform:
+            rotate(17deg)
+            translateX(30px);
+    }
 }
+
+
+@keyframes orbitA {
+
+    from {
+        transform:
+            translate(-50%,-50%)
+            rotateX(72deg)
+            rotateZ(0);
+    }
+
+    to {
+        transform:
+            translate(-50%,-50%)
+            rotateX(72deg)
+            rotateZ(360deg);
+    }
+}
+
+
+@keyframes orbitB {
+
+    from {
+        transform:
+            translate(-50%,-50%)
+            rotateX(67deg)
+            rotateY(28deg)
+            rotateZ(0);
+    }
+
+    to {
+        transform:
+            translate(-50%,-50%)
+            rotateX(67deg)
+            rotateY(28deg)
+            rotateZ(360deg);
+    }
+}
+
+
+@keyframes orbitC {
+
+    from {
+        transform:
+            translate(-50%,-50%)
+            rotateY(72deg)
+            rotateZ(19deg);
+    }
+
+    to {
+        transform:
+            translate(-50%,-50%)
+            rotateY(72deg)
+            rotateZ(379deg);
+    }
+}
+
+
+@keyframes orbitD {
+
+    from {
+        transform:
+            translate(-50%,-50%)
+            rotateX(77deg)
+            rotateZ(37deg);
+    }
+
+    to {
+        transform:
+            translate(-50%,-50%)
+            rotateX(77deg)
+            rotateZ(-323deg);
+    }
+}
+
+
+@keyframes innerSpin {
+
+    from {
+        transform:
+            translate(-50%,-50%)
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            translate(-50%,-50%)
+            rotate(360deg);
+    }
+}
+
+
+@keyframes analyticsPulse {
+
+    from {
+        height: 18px;
+        opacity: .55;
+    }
+
+    to {
+        height: 65px;
+        opacity: 1;
+    }
+}
+
+
+@keyframes scanRotate {
+
+    from {
+        transform:
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+
+@keyframes targetBlink {
+
+    0%,100% {
+        opacity: .35;
+        transform: scale(.82);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.13);
+    }
+}
+
+
+@keyframes voiceWave {
+
+    0%,100% {
+        height: 8px;
+        opacity: .4;
+    }
+
+    50% {
+        height: 42px;
+        opacity: 1;
+    }
+}
+
+
+@keyframes earthGridSpin {
+
+    from {
+        transform:
+            rotate(0deg);
+    }
+
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+
+@keyframes earthOrbit {
+
+    from {
+        transform:
+            translate(-50%,-50%)
+            rotateX(65deg)
+            rotateZ(0);
+    }
+
+    to {
+        transform:
+            translate(-50%,-50%)
+            rotateX(65deg)
+            rotateZ(360deg);
+    }
+}
+
+
+@keyframes aircraftMove {
+
+    0% {
+        transform:
+            translate(0,0)
+            scale(.7);
+        opacity: .2;
+    }
+
+    50% {
+        transform:
+            translate(38px,-16px)
+            scale(1.25);
+        opacity: 1;
+    }
+
+    100% {
+        transform:
+            translate(78px,5px)
+            scale(.5);
+        opacity: .15;
+    }
+}
+
 
 /* =========================================================
    MOBILE
@@ -1367,604 +2527,701 @@ button:active {
 
 @media (max-width: 800px) {
 
-  .topbar {
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    height: 50px;
-  }
+    .topbar {
 
-  .brand-name {
-    font-size: 17px;
-  }
+        left: 24px;
+        right: 24px;
 
-  .neural-panel,
-  .analytics-panel,
-  .voice-panel,
-  .radar-panel {
-    transform: scale(.75);
-    transform-origin: top left;
-  }
+        height: 60px;
+    }
 
-  .neural-panel {
-    top: 70px;
-    left: 4px;
-  }
 
-  .analytics-panel {
-    top: 70px;
-    right: 4px;
-    transform-origin: top right;
-  }
+    .panel {
 
-  .voice-panel {
-    bottom: 82px;
-    left: 4px;
-    transform-origin: bottom left;
-  }
+        width: 155px;
 
-  .radar-panel {
-    bottom: 82px;
-    right: 4px;
-    transform-origin: bottom right;
-  }
+        padding: 9px;
+    }
 
-  .center {
-    width: 420px;
-    height: 420px;
-  }
 
-  .reactor {
-    transform: scale(.75);
-  }
+    .core-stage {
 
-  .system-text {
-    bottom: 22%;
-    width: 280px;
-  }
+        width: 340px;
+        height: 340px;
+    }
 
-  .system-title {
-    font-size: 10px;
-    letter-spacing: 3px;
-  }
 
-  .log {
-    width: 80vw;
-    bottom: 145px;
-  }
+    .energy-core {
 
-  .bottom {
-    left: 8px;
-    right: 8px;
-    bottom: 10px;
-  }
+        width: 105px;
+        height: 105px;
+    }
 
-  .command-row {
-    height: 48px;
-  }
 
-  button {
-    padding: 0 12px;
-  }
+    .inner-1 {
+        width: 125px;
+        height: 125px;
+    }
+
+
+    .inner-2 {
+        width: 155px;
+        height: 155px;
+    }
+
+
+    .inner-3 {
+        width: 185px;
+        height: 185px;
+    }
+
+
+    .earth-hud {
+
+        right: 4px;
+        bottom: 178px;
+
+        transform:
+            scale(.75);
+
+        transform-origin:
+            bottom right;
+    }
+
+
+    .readout {
+        display: none;
+    }
 }
+
 
 @media (max-width: 520px) {
 
-  .hud-panel {
-    opacity: .82;
-  }
+    .brand-name {
 
-  .neural-panel,
-  .analytics-panel,
-  .voice-panel,
-  .radar-panel {
-    transform: scale(.58);
-  }
+        font-size: 13px;
 
-  .center {
-    top: 48%;
-  }
+        letter-spacing: 4px;
+    }
 
-  .reactor {
-    transform: scale(.63);
-  }
 
-  .system-text {
-    bottom: 25%;
-  }
+    .brand-sub {
 
-  .status {
-    font-size: 7px;
-  }
+        font-size: 5px;
 
-  .brand-sub {
-    display: none;
-  }
+        letter-spacing: 2px;
+    }
 
-  .command-input {
-    font-size: 11px;
-    padding: 0 12px;
-  }
 
-  .voice {
-    min-width: 55px;
-  }
+    .system-status {
 
-  .send {
-    min-width: 55px;
-  }
+        font-size: 6px;
+
+        letter-spacing: 1.5px;
+    }
+
+
+    .panel {
+
+        width: 126px;
+
+        min-height: 92px;
+    }
+
+
+    .panel-title {
+
+        font-size: 6px;
+
+        letter-spacing: 2px;
+    }
+
+
+    .core-stage {
+
+        width: 300px;
+        height: 300px;
+
+        top: 50%;
+    }
+
+
+    .energy-core {
+
+        width: 82px;
+        height: 82px;
+    }
+
+
+    .inner-1 {
+        width: 105px;
+        height: 105px;
+    }
+
+
+    .inner-2 {
+        width: 135px;
+        height: 135px;
+    }
+
+
+    .inner-3 {
+        width: 165px;
+        height: 165px;
+    }
+
+
+    .core-label {
+
+        top: 78%;
+
+        font-size: 7px;
+
+        letter-spacing: 4px;
+    }
+
+
+    .earth-hud {
+
+        bottom: 157px;
+
+        transform:
+            scale(.61);
+
+        transform-origin:
+            bottom right;
+    }
+
+
+    .command-area {
+
+        bottom: 8px;
+
+        gap: 4px;
+    }
+
+
+    .command-input {
+
+        height: 40px;
+
+        font-size: 10px;
+    }
+
+
+    .btn {
+
+        height: 40px;
+
+        padding:
+            0 8px;
+
+        font-size: 6px;
+    }
 }
 
 </style>
+
 </head>
+
 
 <body>
 
 <div class="app">
 
-  <!-- =====================================================
-       PARTICLES
-       ===================================================== -->
 
-  <div class="particles">
+<!-- =======================================================
+     CANVASES
+     ======================================================= -->
 
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
-    <span class="particle"></span>
+<canvas id="spaceCanvas"></canvas>
 
-  </div>
+<canvas id="networkCanvas"></canvas>
 
 
-  <!-- =====================================================
-       TOP BAR
-       ===================================================== -->
+<!-- =======================================================
+     CORNERS
+     ======================================================= -->
 
-  <header class="topbar">
+<div class="corner c1"></div>
+<div class="corner c2"></div>
+<div class="corner c3"></div>
+<div class="corner c4"></div>
+
+
+<!-- =======================================================
+     TOP BAR
+     ======================================================= -->
+
+<header class="topbar">
 
     <div class="brand">
 
-      <div class="brand-orb"></div>
+        <div class="brand-orb"></div>
 
-      <div>
-        <div class="brand-name">
-          JARVIS
-        </div>
+        <div>
 
-        <div class="brand-sub">
-          PERSONAL ARTIFICIAL INTELLIGENCE
+            <div class="brand-name">
+                JARVIS
+            </div>
+
+            <div class="brand-sub">
+                ADVANCED PERSONAL AI SYSTEM
+            </div>
+
         </div>
-      </div>
 
     </div>
 
-    <div class="status">
 
-      <span class="status-dot"></span>
+    <div class="system-status">
 
-      <span id="statusText">
-        SYSTEM ONLINE
-      </span>
+        <span class="status-light"></span>
+
+        <span id="systemStatus">
+            SYSTEM ONLINE
+        </span>
 
     </div>
 
-  </header>
+</header>
 
 
-  <!-- =====================================================
-       TOP LEFT — NEURAL CORE
-       ===================================================== -->
+<!-- =======================================================
+     LEFT NEURAL PANEL
+     ======================================================= -->
 
-  <section class="hud-panel neural-panel">
+<section
+    class="panel"
+    style="
+        left:16px;
+        top:86px;
+    "
+>
 
     <div class="panel-title">
+        NEURAL MATRIX
+    </div>
 
-      <span>NEURAL CORE</span>
+    <div class="panel-header-line"></div>
 
-      <span class="panel-code">
-        NC-07
-      </span>
+    <div class="neural-box">
+
+        <canvas id="neuralCanvas"></canvas>
 
     </div>
 
-    <svg
-      class="neural-svg"
-      viewBox="0 0 240 125"
-      preserveAspectRatio="none"
-    >
+    <div class="data-row">
 
-      <line
-        class="neural-line"
-        x1="20" y1="60"
-        x2="70" y2="25"
-      />
+        <span>
+            NODES
+        </span>
 
-      <line
-        class="neural-line"
-        x1="20" y1="60"
-        x2="70" y2="95"
-      />
+        <strong>
+            048
+        </strong>
 
-      <line
-        class="neural-line"
-        x1="70" y1="25"
-        x2="120" y2="50"
-      />
+    </div>
 
-      <line
-        class="neural-line"
-        x1="70" y1="95"
-        x2="120" y2="50"
-      />
+    <div class="data-row">
 
-      <line
-        class="neural-line"
-        x1="120" y1="50"
-        x2="170" y2="20"
-      />
+        <span>
+            SYNAPSE
+        </span>
 
-      <line
-        class="neural-line"
-        x1="120" y1="50"
-        x2="170" y2="90"
-      />
+        <strong>
+            ACTIVE
+        </strong>
 
-      <line
-        class="neural-line"
-        x1="170" y1="20"
-        x2="220" y2="60"
-      />
+    </div>
 
-      <line
-        class="neural-line"
-        x1="170" y1="90"
-        x2="220" y2="60"
-      />
-
-      <line
-        class="neural-line"
-        x1="70" y1="25"
-        x2="170" y2="90"
-      />
-
-      <circle
-        class="neural-node"
-        cx="20"
-        cy="60"
-        r="5"
-      />
-
-      <circle
-        class="neural-node"
-        cx="70"
-        cy="25"
-        r="4"
-      />
-
-      <circle
-        class="neural-node"
-        cx="70"
-        cy="95"
-        r="4"
-      />
-
-      <circle
-        class="neural-node"
-        cx="120"
-        cy="50"
-        r="6"
-      />
-
-      <circle
-        class="neural-node"
-        cx="170"
-        cy="20"
-        r="4"
-      />
-
-      <circle
-        class="neural-node"
-        cx="170"
-        cy="90"
-        r="4"
-      />
-
-      <circle
-        class="neural-node"
-        cx="220"
-        cy="60"
-        r="5"
-      />
-
-    </svg>
-
-  </section>
+</section>
 
 
-  <!-- =====================================================
-       TOP RIGHT — HOLOGRAPHIC ANALYTICS
-       ===================================================== -->
+<!-- =======================================================
+     RIGHT ANALYTICS
+     ======================================================= -->
 
-  <section class="hud-panel analytics-panel">
+<section
+    class="panel"
+    style="
+        right:16px;
+        top:86px;
+    "
+>
 
     <div class="panel-title">
+        AI ANALYTICS
+    </div>
 
-      <span>AI ANALYTICS</span>
+    <div class="panel-header-line"></div>
 
-      <span class="panel-code">
-        AX-12
-      </span>
+    <div class="analytics">
+
+        <div class="analytics-bar"></div>
+        <div class="analytics-bar"></div>
+        <div class="analytics-bar"></div>
+        <div class="analytics-bar"></div>
+        <div class="analytics-bar"></div>
+        <div class="analytics-bar"></div>
 
     </div>
 
-    <div class="analytics-grid">
+    <div class="data-row">
 
-      <div class="analytics-card">
+        <span>
+            CORE LOAD
+        </span>
 
-        <div class="analytics-label">
-          CORE
-        </div>
-
-        <div class="analytics-value">
-          ACTIVE
-        </div>
-
-      </div>
-
-      <div class="analytics-card">
-
-        <div class="analytics-label">
-          RESPONSE
-        </div>
-
-        <div class="analytics-value">
-          READY
-        </div>
-
-      </div>
-
-      <div class="analytics-card">
-
-        <div class="analytics-label">
-          MEMORY
-        </div>
-
-        <div class="analytics-value">
-          ONLINE
-        </div>
-
-      </div>
-
-      <div class="analytics-card">
-
-        <div class="analytics-label">
-          LINK
-        </div>
-
-        <div class="analytics-value">
-          LOCAL
-        </div>
-
-      </div>
+        <strong id="loadValue">
+            68%
+        </strong>
 
     </div>
 
-    <div class="analytics-bars">
-
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-
-    </div>
-
-  </section>
+</section>
 
 
-  <!-- =====================================================
-       CENTRAL CORE
-       ===================================================== -->
+<!-- =======================================================
+     CENTRAL 3D CORE
+     ======================================================= -->
 
-  <main class="center" id="center">
+<section class="core-stage">
 
-    <div
-      class="reactor"
-      id="reactor"
-    >
+    <div class="core-aura"></div>
 
-      <div class="ring one"></div>
-      <div class="ring two"></div>
-      <div class="ring three"></div>
-      <div class="ring four"></div>
 
-      <div class="orbit-node node-a"></div>
-      <div class="orbit-node node-b"></div>
-      <div class="orbit-node node-c"></div>
-      <div class="orbit-node node-d"></div>
+    <div class="orbit orbit-d"></div>
 
-      <div class="core"></div>
+    <div class="orbit orbit-c"></div>
+
+    <div class="orbit orbit-b"></div>
+
+    <div class="orbit orbit-a">
+
+        <span class="orbit-node n1"></span>
+
+        <span class="orbit-node n2"></span>
+
+        <span class="orbit-node n3"></span>
+
+        <span class="orbit-node n4"></span>
+
+        <span class="orbit-node n5"></span>
 
     </div>
 
 
-    <div class="system-text">
+    <div class="core-inner-ring inner-3"></div>
 
-      <div class="system-title">
+    <div class="core-inner-ring inner-2"></div>
+
+    <div class="core-inner-ring inner-1"></div>
+
+
+    <div class="crosshair"></div>
+
+
+    <div class="energy-core"></div>
+
+
+    <div class="core-marker cm1">
+        LINK // 07A
+    </div>
+
+    <div class="core-marker cm2">
+        DATA // 92%
+    </div>
+
+    <div class="core-marker cm3">
+        VECTOR // 04
+    </div>
+
+    <div class="core-marker cm4">
+        AI NODE // ONLINE
+    </div>
+
+
+    <div class="core-label">
+
         JARVIS CORE
-      </div>
 
-      <div
-        class="system-message"
-        id="message"
-      >
-        Awaiting command.
-      </div>
+        <div
+            id="coreState"
+            class="core-state"
+        >
+            STANDBY
+        </div>
 
     </div>
 
-  </main>
+</section>
 
 
-  <!-- =====================================================
-       BOTTOM LEFT — ADVANCED VOICE ANALYZER
-       ===================================================== -->
+<!-- =======================================================
+     VOICE PANEL
+     ======================================================= -->
 
-  <section class="hud-panel voice-panel">
+<section
+    class="panel"
+    style="
+        left:16px;
+        bottom:84px;
+    "
+>
 
     <div class="panel-title">
-
-      <span>VOICE ANALYZER</span>
-
-      <span class="panel-code">
-        VX-05
-      </span>
-
+        VOICE ANALYZER
     </div>
+
+    <div class="panel-header-line"></div>
 
     <div class="voice-wave">
 
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
 
     </div>
 
-    <div class="voice-status">
+    <div class="data-row">
 
-      <span id="voiceState">
-        STANDBY
-      </span>
+        <span>
+            CHANNEL
+        </span>
 
-      <span>
-        AUDIO LINK
-      </span>
+        <strong id="voiceStatus">
+            READY
+        </strong>
 
     </div>
 
-  </section>
+</section>
 
 
-  <!-- =====================================================
-       BOTTOM RIGHT — RADAR
-       ===================================================== -->
+<!-- =======================================================
+     SENSOR PANEL
+     ======================================================= -->
 
-  <section class="hud-panel radar-panel">
+<section
+    class="panel"
+    style="
+        right:16px;
+        bottom:84px;
+    "
+>
 
     <div class="panel-title">
+        SENSOR ARRAY
+    </div>
 
-      <span>SENSOR ARRAY</span>
+    <div class="panel-header-line"></div>
 
-      <span class="panel-code">
-        SR-03
-      </span>
+    <div class="scanner">
+
+        <div class="scan-circle s1"></div>
+
+        <div class="scan-circle s2"></div>
+
+        <div class="scan-circle s3"></div>
+
+        <div class="scan-line"></div>
+
+
+        <div class="scan-target target-a">
+
+            <span class="target-text">
+                OBJECT-01
+            </span>
+
+        </div>
+
+
+        <div class="scan-target target-b">
+
+            <span class="target-text">
+                OBJECT-02
+            </span>
+
+        </div>
 
     </div>
 
-    <div class="radar">
+    <div class="data-row">
 
-      <div class="radar-horizontal"></div>
+        <span>
+            SCAN
+        </span>
 
-      <div class="radar-dot one"></div>
-      <div class="radar-dot two"></div>
-      <div class="radar-dot three"></div>
+        <strong>
+            2 OBJECTS
+        </strong>
 
     </div>
 
-  </section>
+</section>
 
 
-  <!-- =====================================================
-       DECORATIVE MARKERS
-       ===================================================== -->
+<!-- =======================================================
+     MINI EARTH
+     ======================================================= -->
 
-  <div class="marker one">
-    AI-NODE / 01
-  </div>
+<section class="earth-hud">
 
-  <div class="marker two">
-    DATA STREAM
-  </div>
-
-  <div class="marker three">
-    SIGNAL ANALYSIS
-  </div>
-
-  <div class="marker four">
-    CORE LINK
-  </div>
+    <div class="earth-title">
+        GLOBAL NETWORK // LIVE
+    </div>
 
 
-  <!-- =====================================================
-       COMMAND LOG
-       ===================================================== -->
+    <div class="earth-orbit">
 
-  <div
-    class="log"
-    id="log"
-  ></div>
+        <span class="satellite s1"></span>
+
+    </div>
 
 
-  <!-- =====================================================
-       COMMAND INPUT
-       ===================================================== -->
+    <div class="earth-orbit two">
 
-  <footer class="bottom">
+        <span class="satellite s2"></span>
 
-    <div class="command-row">
+    </div>
 
-      <input
-        id="input"
+
+    <div class="earth">
+
+        <div class="earth-grid"></div>
+
+        <div class="earth-lat lat1"></div>
+        <div class="earth-lat lat2"></div>
+        <div class="earth-lat lat3"></div>
+
+
+        <div class="land l1"></div>
+        <div class="land l2"></div>
+        <div class="land l3"></div>
+        <div class="land l4"></div>
+
+
+        <span class="earth-node en1"></span>
+        <span class="earth-node en2"></span>
+        <span class="earth-node en3"></span>
+        <span class="earth-node en4"></span>
+        <span class="earth-node en5"></span>
+
+
+        <span class="earth-link el1"></span>
+        <span class="earth-link el2"></span>
+
+
+        <span class="aircraft air1"></span>
+        <span class="aircraft air2"></span>
+        <span class="aircraft air3"></span>
+
+    </div>
+
+
+    <div class="earth-telemetry">
+
+        <div>
+            <b>SAT</b>
+            <span id="satCount">07</span>
+        </div>
+
+        <div>
+            <b>AIR</b>
+            <span id="airCount">14</span>
+        </div>
+
+        <div>
+            <b>LINK</b>
+            SECURE
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =======================================================
+     HUD READOUTS
+     ======================================================= -->
+
+<div class="readout r1">
+
+    <b>CORE VECTOR</b><br>
+
+    X 047.21<br>
+    Y 091.44<br>
+    Z 003.82
+
+</div>
+
+
+<div class="readout r2">
+
+    <b>AI TELEMETRY</b><br>
+
+    LAT 25.3176<br>
+    NET STABLE<br>
+    NODE 0048
+
+</div>
+
+
+<div class="readout r3">
+
+    <b>PROCESS STREAM</b><br>
+
+    001010 011001 101101<br>
+    CHANNEL SECURE
+
+</div>
+
+
+<!-- =======================================================
+     COMMAND BAR
+     ======================================================= -->
+
+<form
+    id="commandForm"
+    class="command-area"
+>
+
+    <input
+        id="commandInput"
         class="command-input"
         type="text"
         autocomplete="off"
-        placeholder="Enter command..."
-      />
+        placeholder="Command JARVIS..."
+    >
 
-      <button
+
+    <button
         id="voiceButton"
-        class="voice"
+        class="btn"
         type="button"
-      >
+    >
         VOICE
-      </button>
+    </button>
 
-      <button
-        id="sendButton"
-        class="send"
-        type="button"
-      >
+
+    <button
+        class="btn"
+        type="submit"
+    >
         SEND
-      </button>
+    </button>
 
-    </div>
+</form>
 
-  </footer>
 
 </div>
 
@@ -1972,365 +3229,914 @@ button:active {
 <script>
 
 /* =========================================================
-   JARVIS GUI CONTROLLER
-   IMPORTANT:
-   Backend endpoints are unchanged.
+   ELEMENTS
    ========================================================= */
 
-const input =
-  document.getElementById("input");
+const commandInput =
+    document.getElementById(
+        "commandInput"
+    );
 
-const sendButton =
-  document.getElementById("sendButton");
+const commandForm =
+    document.getElementById(
+        "commandForm"
+    );
 
 const voiceButton =
-  document.getElementById("voiceButton");
-
-const message =
-  document.getElementById("message");
-
-const log =
-  document.getElementById("log");
-
-const reactor =
-  document.getElementById("reactor");
-
-const center =
-  document.getElementById("center");
-
-const statusText =
-  document.getElementById("statusText");
-
-const voiceState =
-  document.getElementById("voiceState");
-
-
-/* =========================================================
-   LOG
-   ========================================================= */
-
-function addLog(
-  type,
-  text
-) {
-
-  const line =
-    document.createElement("div");
-
-  line.className =
-    `log-line ${type}`;
-
-  line.textContent =
-    text;
-
-  log.appendChild(line);
-
-  while (
-    log.children.length > 4
-  ) {
-    log.removeChild(
-      log.firstChild
-    );
-  }
-
-}
-
-
-/* =========================================================
-   MESSAGE
-   ========================================================= */
-
-function setMessage(text) {
-
-  message.textContent =
-    text;
-
-}
-
-
-/* =========================================================
-   THINKING
-   ========================================================= */
-
-function thinking(state) {
-
-  center.classList.toggle(
-    "thinking",
-    state
-  );
-
-  if (state) {
-
-    statusText.textContent =
-      "PROCESSING";
-
-  } else {
-
-    statusText.textContent =
-      "SYSTEM ONLINE";
-
-  }
-
-}
-
-
-/* =========================================================
-   LISTENING
-   ========================================================= */
-
-function listening(state) {
-
-  reactor.classList.toggle(
-    "listening",
-    state
-  );
-
-  voiceButton.classList.toggle(
-    "active",
-    state
-  );
-
-  voiceState.textContent =
-    state
-      ? "LISTENING"
-      : "STANDBY";
-
-}
-
-
-/* =========================================================
-   SEND COMMAND
-   ========================================================= */
-
-async function sendCommand(
-  text
-) {
-
-  const command =
-    String(text || "")
-      .trim();
-
-  if (!command) {
-
-    setMessage(
-      "Please enter a command."
+    document.getElementById(
+        "voiceButton"
     );
 
-    return;
+const coreState =
+    document.getElementById(
+        "coreState"
+    );
 
-  }
+const voiceStatus =
+    document.getElementById(
+        "voiceStatus"
+    );
 
-  input.value = "";
+const systemStatus =
+    document.getElementById(
+        "systemStatus"
+    );
 
-  addLog(
-    "user",
-    `YOU: ${command}`
-  );
+const loadValue =
+    document.getElementById(
+        "loadValue"
+    );
 
-  setMessage(
-    "Processing command..."
-  );
+const satCount =
+    document.getElementById(
+        "satCount"
+    );
 
-  thinking(true);
+const airCount =
+    document.getElementById(
+        "airCount"
+    );
 
-  try {
 
-    /*
-     * KEEP THIS ENDPOINT UNCHANGED
-     */
+/* =========================================================
+   STATE ENGINE
+   ========================================================= */
 
-    const response =
-      await fetch(
-        "/api/command",
-        {
-          method: "POST",
+function setState(state) {
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
+    document.body.classList.remove(
+        "listening",
+        "thinking"
+    );
 
-          body:
-            JSON.stringify({
-              command
-            })
+
+    if (state === "listening") {
+
+        document.body.classList.add(
+            "listening"
+        );
+
+        coreState.textContent =
+            "LISTENING";
+
+        voiceStatus.textContent =
+            "LISTENING";
+
+        systemStatus.textContent =
+            "VOICE ACTIVE";
+
+        return;
+    }
+
+
+    if (state === "thinking") {
+
+        document.body.classList.add(
+            "thinking"
+        );
+
+        coreState.textContent =
+            "PROCESSING";
+
+        voiceStatus.textContent =
+            "PROCESSING";
+
+        systemStatus.textContent =
+            "AI PROCESSING";
+
+        return;
+    }
+
+
+    coreState.textContent =
+        "STANDBY";
+
+    voiceStatus.textContent =
+        "READY";
+
+    systemStatus.textContent =
+        "SYSTEM ONLINE";
+}
+
+
+/* =========================================================
+   COMMAND ENGINE CONNECTION
+   ========================================================= */
+
+async function sendCommand(command) {
+
+    command =
+        String(command || "")
+            .trim();
+
+
+    if (!command) {
+        return;
+    }
+
+
+    setState(
+        "thinking"
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/command",
+                {
+                    method:
+                        "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            command
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "[JARVIS]",
+            data
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "[JARVIS]",
+            error
+        );
+
+    }
+
+    finally {
+
+        setState(
+            "idle"
+        );
+
+    }
+}
+
+
+/* =========================================================
+   TEXT COMMAND
+   ========================================================= */
+
+commandForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        const command =
+            commandInput.value.trim();
+
+
+        if (!command) {
+            return;
         }
-      );
 
-    const data =
-      await response.json();
 
-    const reply =
-      data.reply ||
-      "Command completed.";
+        commandInput.value = "";
 
-    addLog(
-      "jarvis",
-      `JARVIS: ${reply}`
-    );
 
-    setMessage(reply);
+        await sendCommand(
+            command
+        );
 
-  } catch (error) {
-
-    console.error(error);
-
-    addLog(
-      "jarvis",
-      "JARVIS: Connection error."
-    );
-
-    setMessage(
-      "I couldn't connect to the JARVIS command system."
-    );
-
-  } finally {
-
-    thinking(false);
-
-  }
-
-}
+    }
+);
 
 
 /* =========================================================
    VOICE COMMAND
    ========================================================= */
 
-async function voiceCommand() {
+voiceButton.addEventListener(
+    "click",
+    async () => {
 
-  listening(true);
+        setState(
+            "listening"
+        );
 
-  thinking(false);
 
-  setMessage(
-    "Listening..."
-  );
+        voiceButton.disabled =
+            true;
 
-  addLog(
-    "jarvis",
-    "JARVIS: Listening..."
-  );
 
-  try {
+        try {
 
-    /*
-     * KEEP THIS ENDPOINT UNCHANGED
-     */
+            const response =
+                await fetch(
+                    "/api/voice",
+                    {
+                        method:
+                            "POST"
+                    }
+                );
 
-    const response =
-      await fetch(
-        "/api/voice",
-        {
-          method: "POST"
+
+            const data =
+                await response.json();
+
+
+            console.log(
+                "[JARVIS VOICE]",
+                data
+            );
+
         }
-      );
 
-    const data =
-      await response.json();
+        catch (error) {
 
-    const reply =
-      data.reply ||
-      "Command completed.";
+            console.error(
+                "[VOICE]",
+                error
+            );
 
-    if (data.command) {
+        }
 
-      addLog(
-        "user",
-        `YOU: ${data.command}`
-      );
+        finally {
+
+            voiceButton.disabled =
+                false;
+
+            setState(
+                "idle"
+            );
+
+        }
 
     }
+);
 
-    addLog(
-      "jarvis",
-      `JARVIS: ${reply}`
+
+/* =========================================================
+   ANALYTICS
+   ========================================================= */
+
+setInterval(
+    () => {
+
+        const value =
+            Math.floor(
+                52 +
+                Math.random() * 45
+            );
+
+
+        loadValue.textContent =
+            value + "%";
+
+    },
+    1300
+);
+
+
+/* =========================================================
+   GLOBAL NETWORK TELEMETRY
+   ========================================================= */
+
+setInterval(
+    () => {
+
+        satCount.textContent =
+            String(
+                5 +
+                Math.floor(
+                    Math.random() * 8
+                )
+            ).padStart(
+                2,
+                "0"
+            );
+
+
+        airCount.textContent =
+            String(
+                10 +
+                Math.floor(
+                    Math.random() * 12
+                )
+            );
+
+    },
+    2200
+);
+
+
+/* =========================================================
+   SPACE PARTICLE FIELD
+   ========================================================= */
+
+const spaceCanvas =
+    document.getElementById(
+        "spaceCanvas"
     );
 
-    setMessage(reply);
-
-  } catch (error) {
-
-    console.error(error);
-
-    addLog(
-      "jarvis",
-      "JARVIS: Voice command failed."
+const spaceCtx =
+    spaceCanvas.getContext(
+        "2d"
     );
 
-    setMessage(
-      "Voice command failed."
+
+let particles = [];
+
+
+function resizeSpace() {
+
+    const dpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
+
+
+    spaceCanvas.width =
+        window.innerWidth *
+        dpr;
+
+
+    spaceCanvas.height =
+        window.innerHeight *
+        dpr;
+
+
+    spaceCanvas.style.width =
+        window.innerWidth +
+        "px";
+
+
+    spaceCanvas.style.height =
+        window.innerHeight +
+        "px";
+
+
+    spaceCtx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
     );
 
-  } finally {
 
-    listening(false);
-
-  }
-
+    createParticles();
 }
 
 
 /* =========================================================
-   SEND BUTTON
+   PARTICLES
    ========================================================= */
 
-sendButton.addEventListener(
-  "click",
-  () => {
+function createParticles() {
 
-    sendCommand(
-      input.value
-    );
+    particles = [];
 
-  }
-);
+
+    const count =
+        Math.min(
+            170,
+            Math.floor(
+                window.innerWidth *
+                window.innerHeight /
+                6500
+            )
+        );
+
+
+    for (
+        let i = 0;
+        i < count;
+        i++
+    ) {
+
+        particles.push({
+
+            x:
+                Math.random() *
+                window.innerWidth,
+
+            y:
+                Math.random() *
+                window.innerHeight,
+
+            speed:
+                .08 +
+                Math.random() * .38,
+
+            size:
+                .35 +
+                Math.random() * 1.2,
+
+            alpha:
+                .12 +
+                Math.random() * .55
+
+        });
+
+    }
+}
 
 
 /* =========================================================
-   ENTER KEY
+   SPACE DRAW
    ========================================================= */
 
-input.addEventListener(
-  "keydown",
-  event => {
+function drawSpace() {
 
-    if (
-      event.key === "Enter"
+    spaceCtx.clearRect(
+        0,
+        0,
+        window.innerWidth,
+        window.innerHeight
+    );
+
+
+    for (
+        const p of particles
     ) {
 
-      event.preventDefault();
+        p.y +=
+            p.speed;
 
-      sendCommand(
-        input.value
-      );
+
+        if (
+            p.y >
+            window.innerHeight
+        ) {
+
+            p.y = -5;
+
+            p.x =
+                Math.random() *
+                window.innerWidth;
+        }
+
+
+        spaceCtx.beginPath();
+
+
+        spaceCtx.arc(
+            p.x,
+            p.y,
+            p.size,
+            0,
+            Math.PI * 2
+        );
+
+
+        spaceCtx.fillStyle =
+            `rgba(
+                0,
+                210,
+                255,
+                ${p.alpha}
+            )`;
+
+
+        spaceCtx.fill();
 
     }
 
-  }
-);
+
+    /* subtle particle connections */
+
+    for (
+        let i = 0;
+        i < particles.length;
+        i++
+    ) {
+
+        for (
+            let j = i + 1;
+            j < particles.length;
+            j++
+        ) {
+
+            const a =
+                particles[i];
+
+            const b =
+                particles[j];
+
+
+            const dx =
+                a.x - b.x;
+
+            const dy =
+                a.y - b.y;
+
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
+
+
+            if (
+                distance < 78
+            ) {
+
+                const alpha =
+                    (
+                        1 -
+                        distance / 78
+                    ) * .07;
+
+
+                spaceCtx.beginPath();
+
+
+                spaceCtx.moveTo(
+                    a.x,
+                    a.y
+                );
+
+
+                spaceCtx.lineTo(
+                    b.x,
+                    b.y
+                );
+
+
+                spaceCtx.strokeStyle =
+                    `rgba(
+                        0,
+                        190,
+                        255,
+                        ${alpha}
+                    )`;
+
+
+                spaceCtx.lineWidth =
+                    .5;
+
+
+                spaceCtx.stroke();
+
+            }
+
+        }
+
+    }
+
+
+    requestAnimationFrame(
+        drawSpace
+    );
+}
 
 
 /* =========================================================
-   VOICE BUTTON
+   ADVANCED NEURAL NETWORK CANVAS
    ========================================================= */
 
-voiceButton.addEventListener(
-  "click",
-  voiceCommand
-);
+const neuralCanvas =
+    document.getElementById(
+        "neuralCanvas"
+    );
+
+const neuralCtx =
+    neuralCanvas.getContext(
+        "2d"
+    );
+
+
+let neuralNodes = [];
+
+
+function resizeNeural() {
+
+    const rect =
+        neuralCanvas.getBoundingClientRect();
+
+
+    const dpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
+
+
+    neuralCanvas.width =
+        rect.width * dpr;
+
+
+    neuralCanvas.height =
+        rect.height * dpr;
+
+
+    neuralCtx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+
+    neuralNodes = [];
+
+
+    for (
+        let i = 0;
+        i < 34;
+        i++
+    ) {
+
+        neuralNodes.push({
+
+            x:
+                Math.random() *
+                rect.width,
+
+            y:
+                Math.random() *
+                rect.height,
+
+            vx:
+                (Math.random()-.5) *
+                .12,
+
+            vy:
+                (Math.random()-.5) *
+                .12,
+
+            pulse:
+                Math.random() *
+                Math.PI * 2
+
+        });
+
+    }
+}
 
 
 /* =========================================================
-   INITIAL GUI STATE
+   NEURAL NETWORK DRAW
    ========================================================= */
 
-setMessage(
-  "Awaiting command."
+function drawNeural() {
+
+    const width =
+        neuralCanvas.clientWidth;
+
+    const height =
+        neuralCanvas.clientHeight;
+
+
+    neuralCtx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    for (
+        const node of neuralNodes
+    ) {
+
+        node.x += node.vx;
+        node.y += node.vy;
+
+        node.pulse += .025;
+
+
+        if (
+            node.x < 0 ||
+            node.x > width
+        ) {
+
+            node.vx *= -1;
+
+        }
+
+
+        if (
+            node.y < 0 ||
+            node.y > height
+        ) {
+
+            node.vy *= -1;
+
+        }
+
+    }
+
+
+    /* connections */
+
+    for (
+        let i = 0;
+        i < neuralNodes.length;
+        i++
+    ) {
+
+        for (
+            let j = i + 1;
+            j < neuralNodes.length;
+            j++
+        ) {
+
+            const a =
+                neuralNodes[i];
+
+            const b =
+                neuralNodes[j];
+
+
+            const dx =
+                a.x - b.x;
+
+            const dy =
+                a.y - b.y;
+
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
+
+
+            if (
+                distance < 48
+            ) {
+
+                const alpha =
+                    (
+                        1 -
+                        distance / 48
+                    ) * .5;
+
+
+                neuralCtx.beginPath();
+
+
+                neuralCtx.moveTo(
+                    a.x,
+                    a.y
+                );
+
+
+                neuralCtx.lineTo(
+                    b.x,
+                    b.y
+                );
+
+
+                neuralCtx.strokeStyle =
+                    `rgba(
+                        0,
+                        215,
+                        255,
+                        ${alpha}
+                    )`;
+
+
+                neuralCtx.lineWidth =
+                    .45;
+
+
+                neuralCtx.stroke();
+
+            }
+
+        }
+
+    }
+
+
+    /* nodes */
+
+    for (
+        const node of neuralNodes
+    ) {
+
+        const pulse =
+            1 +
+            Math.sin(
+                node.pulse
+            ) * .5;
+
+
+        neuralCtx.beginPath();
+
+
+        neuralCtx.arc(
+            node.x,
+            node.y,
+            1.3 * pulse,
+            0,
+            Math.PI * 2
+        );
+
+
+        neuralCtx.fillStyle =
+            "#00eaff";
+
+
+        neuralCtx.shadowBlur =
+            7;
+
+
+        neuralCtx.shadowColor =
+            "#00eaff";
+
+
+        neuralCtx.fill();
+
+
+        neuralCtx.shadowBlur =
+            0;
+
+    }
+
+
+    requestAnimationFrame(
+        drawNeural
+    );
+}
+
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        resizeSpace();
+
+        resizeNeural();
+
+    }
 );
 
-statusText.textContent =
-  "SYSTEM ONLINE";
+
+resizeSpace();
+
+resizeNeural();
+
+drawSpace();
+
+drawNeural();
+
+setState(
+    "idle"
+);
+
+
+setTimeout(
+    () => {
+
+        commandInput.focus();
+
+    },
+    600
+);
 
 </script>
 
