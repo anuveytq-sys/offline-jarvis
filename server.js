@@ -714,9 +714,19 @@ if (fileResponse !== null) {
   if (
     has(query, [
       "what time is it",
+      "what is the time",
+      "what time it is",
       "tell me the time",
+      "tell me what time it is",
       "current time",
-      "time now"
+      "time now",
+      "what time is it now",
+      "what is the current time",
+      "current time now",
+      "tell me current time",
+      "tell me what the time is",
+      "can you tell me the time",
+      "do you know the time"
     ])
   ) {
     const now = new Date();
@@ -744,9 +754,16 @@ if (fileResponse !== null) {
     has(query, [
       "what is today's date",
       "what is the date",
+      "what date is it",
+      "what date is today",
       "today's date",
       "todays date",
-      "current date"
+      "current date",
+      "today date",
+      "date today",
+      "tell me the date",
+      "tell me today's date",
+      "what day is it"
     ])
   ) {
     const now = new Date();
@@ -776,7 +793,20 @@ if (fileResponse !== null) {
       "battery",
       "battery level",
       "battery percentage",
-      "how much battery"
+      "battery percent",
+      "battery status",
+      "how much battery",
+      "how much battery is left",
+      "how much battery do i have",
+      "what is my battery",
+      "what is the battery",
+      "check battery",
+      "check my battery",
+      "show battery",
+      "tell me my battery",
+      "tell me the battery level",
+      "how much charge is left",
+      "phone battery"
     ])
   ) {
 
@@ -833,7 +863,19 @@ if (fileResponse !== null) {
       "storage",
       "storage space",
       "free space",
-      "disk space"
+      "disk space",
+      "how much storage",
+      "how much storage is left",
+      "how much free storage",
+      "how much space is left",
+      "check storage",
+      "check my storage",
+      "check storage space",
+      "show storage",
+      "tell me my storage",
+      "tell me the storage",
+      "phone storage",
+      "internal storage"
     ])
   ) {
 
@@ -865,10 +907,22 @@ if (fileResponse !== null) {
     has(query, [
       "device information",
       "device info",
+      "device details",
       "phone information",
       "phone info",
+      "phone details",
       "system information",
-      "system info"
+      "system info",
+      "my device information",
+      "my device info",
+      "my phone information",
+      "my phone info",
+      "tell me about my device",
+      "tell me about my phone",
+      "what device am i using",
+      "what phone am i using",
+      "show device information",
+      "show device info"
     ])
   ) {
 
@@ -897,10 +951,23 @@ if (fileResponse !== null) {
   if (
     has(query, [
       "network",
+      "network status",
+      "network information",
+      "network info",
       "internet status",
+      "internet connection",
+      "internet connection status",
       "connection status",
       "wifi status",
-      "wi fi status"
+      "wi fi status",
+      "wifi connection",
+      "check network",
+      "check my network",
+      "check internet",
+      "check my internet",
+      "is internet working",
+      "am i connected to the internet",
+      "tell me my network status"
     ])
   ) {
 
@@ -916,21 +983,39 @@ if (fileResponse !== null) {
       );
     }
 
-    const route =
+    /*
+     * Android/Termux may block access to the routing
+     * netlink socket, so "ip route" is unreliable here.
+     * Test actual Internet connectivity instead.
+     */
+
+    const internet =
       await run(
-        "ip route 2>/dev/null | head -1"
+        "ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1"
       );
 
-    if (route.output) {
+    if (internet.ok) {
       return reply(
         res,
-        `Network route: ${route.output}`
+        "Internet connection is active."
+      );
+    }
+
+    const dns =
+      await run(
+        "ping -c 1 -W 2 google.com >/dev/null 2>&1"
+      );
+
+    if (dns.ok) {
+      return reply(
+        res,
+        "Internet connection is active and DNS is working."
       );
     }
 
     return reply(
       res,
-      "I couldn't retrieve network information."
+      "I couldn't confirm an active Internet connection."
     );
   }
 
@@ -942,7 +1027,14 @@ if (fileResponse !== null) {
     has(query, [
       "vibrate",
       "vibration",
-      "make the phone vibrate"
+      "make the phone vibrate",
+      "make phone vibrate",
+      "vibrate my phone",
+      "vibrate the phone",
+      "phone vibration",
+      "test vibration",
+      "activate vibration",
+      "turn on vibration"
     ])
   ) {
 
@@ -965,7 +1057,7 @@ if (fileResponse !== null) {
 
   const brightness =
     query.match(
-      /(?:set )?(?:screen )?brightness(?: to)?\s+(\d{1,3})/
+      /(?:set|change|make)?\s*(?:the\s+)?(?:screen\s+)?brightness(?:\s+to)?\s+(\d{1,3})(?:\s*percent)?/
     );
 
   if (brightness) {
@@ -1002,16 +1094,75 @@ if (fileResponse !== null) {
       "take a screenshot",
       "capture screen",
       "capture screenshot",
-      "screenshot"
+      "screenshot",
+      "take screen shot",
+      "capture my screen",
+      "take a picture of the screen",
+      "capture the screen",
+      "take a screen capture",
+      "save screenshot"
     ])
   ) {
 
     const filename =
       `/sdcard/Pictures/JARVIS_${Date.now()}.png`;
 
+    /*
+     * Android exposes screencap on this device, but the
+     * current Termux process is not permitted to capture
+     * the display. Do not report a false successful capture.
+     */
+
     const result =
       await run(
-        `termux-screenshot ${quote(filename)}`
+        `/system/bin/screencap -p ${quote(filename)}`
+      );
+
+    if (
+      result.ok &&
+      result.output === "" &&
+      result.error === ""
+    ) {
+      return reply(
+        res,
+        `Screenshot saved to ${filename}.`
+      );
+    }
+
+    return reply(
+      res,
+      "Screenshot capture isn't available from Termux on this device."
+    );
+  }
+
+  // ═══════════════════════════════════
+
+  if (
+    has(query, [
+      "take screenshot",
+      "take a screenshot",
+      "capture screen",
+      "capture screenshot",
+      "screenshot",
+      "take screen shot",
+      "capture my screen",
+      "take a picture of the screen",
+      "capture the screen",
+      "take a screen capture",
+      "save screenshot"
+    ])
+  ) {
+
+    const filename =
+      `/sdcard/Pictures/JARVIS_${Date.now()}.png`;
+
+    /*
+     * termux-screenshot is unavailable on this Termux setup.
+     * Android's built-in screencap works instead.
+     */
+    const result =
+      await run(
+        `screencap -p ${quote(filename)}`
       );
 
     return reply(
@@ -1306,6 +1457,8 @@ if (fileResponse !== null) {
 
 app.post("/api/voice", async (req, res) => {
 
+  console.log("[JARVIS VOICE] Listening...");
+
   const speech =
     await run(
       "termux-speech-to-text",
@@ -1313,7 +1466,13 @@ app.post("/api/voice", async (req, res) => {
     );
 
   const command =
-    speech.output.trim();
+    String(speech.output || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  console.log(
+    `[JARVIS VOICE] Heard: ${command || "(nothing)"}`
+  );
 
   if (!command) {
     return reply(
@@ -1345,15 +1504,34 @@ app.post("/api/voice", async (req, res) => {
       data.reply ||
       "Command completed.";
 
-    await speak(text);
+    console.log(
+      `[JARVIS VOICE] Reply: ${text}`
+    );
+
+    /*
+     * Start TTS without making the HTTP request wait
+     * for the entire speech to finish.
+     */
+    speak(text).catch(error => {
+      console.error(
+        "[JARVIS TTS] Error:",
+        error.message
+      );
+    });
 
     return res.json({
       ok: true,
       command,
-      reply: text
+      reply: text,
+      mode: data.mode || "unknown"
     });
 
-  } catch {
+  } catch (error) {
+
+    console.error(
+      "[JARVIS VOICE] Error:",
+      error.message
+    );
 
     return reply(
       res,
