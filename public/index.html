@@ -3227,917 +3227,349 @@ body.thinking
 
 
 <script>
-
 /* =========================================================
    ELEMENTS
    ========================================================= */
-
-const commandInput =
-    document.getElementById(
-        "commandInput"
-    );
-
-const commandForm =
-    document.getElementById(
-        "commandForm"
-    );
-
-const voiceButton =
-    document.getElementById(
-        "voiceButton"
-    );
-
-const coreState =
-    document.getElementById(
-        "coreState"
-    );
-
-const voiceStatus =
-    document.getElementById(
-        "voiceStatus"
-    );
-
-const systemStatus =
-    document.getElementById(
-        "systemStatus"
-    );
-
-const loadValue =
-    document.getElementById(
-        "loadValue"
-    );
-
-const satCount =
-    document.getElementById(
-        "satCount"
-    );
-
-const airCount =
-    document.getElementById(
-        "airCount"
-    );
-
+const commandInput   = document.getElementById("commandInput");
+const commandForm    = document.getElementById("commandForm");
+const voiceButton    = document.getElementById("voiceButton");
+const coreState      = document.getElementById("coreState");
+const voiceStatus    = document.getElementById("voiceStatus");
+const systemStatus   = document.getElementById("systemStatus");
+const loadValue      = document.getElementById("loadValue");
+const satCount       = document.getElementById("satCount");
+const airCount       = document.getElementById("airCount");
 
 /* =========================================================
    STATE ENGINE
    ========================================================= */
-
 function setState(state) {
+  document.body.classList.remove("listening", "thinking");
 
-    document.body.classList.remove(
-        "listening",
-        "thinking"
-    );
+  if (state === "listening") {
+    document.body.classList.add("listening");
+    coreState.textContent    = "LISTENING";
+    voiceStatus.textContent  = "LISTENING";
+    systemStatus.textContent = "VOICE ACTIVE";
+    return;
+  }
 
+  if (state === "thinking") {
+    document.body.classList.add("thinking");
+    coreState.textContent    = "PROCESSING";
+    voiceStatus.textContent  = "PROCESSING";
+    systemStatus.textContent = "AI PROCESSING";
+    return;
+  }
 
-    if (state === "listening") {
-
-        document.body.classList.add(
-            "listening"
-        );
-
-        coreState.textContent =
-            "LISTENING";
-
-        voiceStatus.textContent =
-            "LISTENING";
-
-        systemStatus.textContent =
-            "VOICE ACTIVE";
-
-        return;
-    }
-
-
-    if (state === "thinking") {
-
-        document.body.classList.add(
-            "thinking"
-        );
-
-        coreState.textContent =
-            "PROCESSING";
-
-        voiceStatus.textContent =
-            "PROCESSING";
-
-        systemStatus.textContent =
-            "AI PROCESSING";
-
-        return;
-    }
-
-
-    coreState.textContent =
-        "STANDBY";
-
-    voiceStatus.textContent =
-        "READY";
-
-    systemStatus.textContent =
-        "SYSTEM ONLINE";
+  coreState.textContent    = "STANDBY";
+  voiceStatus.textContent  = "READY";
+  systemStatus.textContent = "SYSTEM ONLINE";
 }
-
 
 /* =========================================================
-   COMMAND ENGINE CONNECTION
+   BROWSER TTS (Text-to-Speech)
    ========================================================= */
+function speak(text) {
+  if (!window.speechSynthesis) return;
 
-async function sendCommand(command) {
+  window.speechSynthesis.cancel();
 
-    command =
-        String(command || "")
-            .trim();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang  = "en-US";
+  u.rate  = 0.95;
+  u.pitch = 0.95;
 
+  const voices = speechSynthesis.getVoices();
+  const preferred = voices.find(v =>
+    /daniel|david|mark|google us english|microsoft david|sam/i.test(v.name)
+  ) || voices.find(v => v.lang.startsWith("en"));
 
-    if (!command) {
-        return;
-    }
+  if (preferred) u.voice = preferred;
 
-
-    setState(
-        "thinking"
-    );
-
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/command",
-                {
-                    method:
-                        "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            command
-                        })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "[JARVIS]",
-            data
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "[JARVIS]",
-            error
-        );
-
-    }
-
-    finally {
-
-        setState(
-            "idle"
-        );
-
-    }
+  speechSynthesis.speak(u);
 }
 
+/* =========================================================
+   COMMAND ENGINE
+   ========================================================= */
+async function sendCommand(command) {
+  command = String(command || "").trim();
+  if (!command) return;
+
+  setState("thinking");
+
+  try {
+    const response = await fetch("/api/command", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command })
+    });
+
+    const data = await response.json();
+    console.log("[JARVIS]", data);
+
+    if (data.reply) {
+      speak(data.reply);
+    }
+  } catch (err) {
+    console.error("[JARVIS]", err);
+    speak("There was a communication error with the core.");
+  } finally {
+    setState("idle");
+  }
+}
 
 /* =========================================================
    TEXT COMMAND
    ========================================================= */
+commandForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-commandForm.addEventListener(
-    "submit",
-    async event => {
+  const command = commandInput.value.trim();
+  if (!command) return;
 
-        event.preventDefault();
+  commandInput.value = "";
+  await sendCommand(command);
+});
 
+/* =========================================================
+   VOICE (Web Speech API)
+   ========================================================= */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
 
-        const command =
-            commandInput.value.trim();
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.continuous     = false;
+  recognition.interimResults = false;
+  recognition.lang           = "en-US";
 
+  recognition.onstart = () => {
+    setState("listening");
+  };
 
-        if (!command) {
-            return;
-        }
+  recognition.onresult = async (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    console.log("[JARVIS VOICE] Heard:", transcript);
 
-
-        commandInput.value = "";
-
-
-        await sendCommand(
-            command
-        );
-
+    if (transcript) {
+      await sendCommand(transcript);
+    } else {
+      setState("idle");
+      speak("I didn't catch that.");
     }
-);
+  };
 
+  recognition.onerror = (event) => {
+    console.warn("[VOICE]", event.error);
+    setState("idle");
 
-/* =========================================================
-   VOICE COMMAND
-   ========================================================= */
-
-voiceButton.addEventListener(
-    "click",
-    async () => {
-
-        setState(
-            "listening"
-        );
-
-
-        voiceButton.disabled =
-            true;
-
-
-        try {
-
-            const response =
-                await fetch(
-                    "/api/voice",
-                    {
-                        method:
-                            "POST"
-                    }
-                );
-
-
-            const data =
-                await response.json();
-
-
-            console.log(
-                "[JARVIS VOICE]",
-                data
-            );
-
-        }
-
-        catch (error) {
-
-            console.error(
-                "[VOICE]",
-                error
-            );
-
-        }
-
-        finally {
-
-            voiceButton.disabled =
-                false;
-
-            setState(
-                "idle"
-            );
-
-        }
-
+    if (event.error === "not-allowed") {
+      speak("Microphone permission is required.");
+    } else if (event.error === "no-speech") {
+      speak("I didn't hear anything.");
     }
-);
+  };
 
+  recognition.onend = () => {};
+}
 
-/* =========================================================
-   ANALYTICS
-   ========================================================= */
+voiceButton.addEventListener("click", () => {
+  if (!recognition) {
+    speak("Speech recognition is not supported in this browser. Please use Chrome or Edge.");
+    return;
+  }
 
-setInterval(
-    () => {
-
-        const value =
-            Math.floor(
-                52 +
-                Math.random() * 45
-            );
-
-
-        loadValue.textContent =
-            value + "%";
-
-    },
-    1300
-);
-
+  try {
+    recognition.start();
+  } catch (e) {}
+});
 
 /* =========================================================
-   GLOBAL NETWORK TELEMETRY
+   ANALYTICS + TELEMETRY
    ========================================================= */
+setInterval(() => {
+  loadValue.textContent = Math.floor(52 + Math.random() * 45) + "%";
+}, 1300);
 
-setInterval(
-    () => {
-
-        satCount.textContent =
-            String(
-                5 +
-                Math.floor(
-                    Math.random() * 8
-                )
-            ).padStart(
-                2,
-                "0"
-            );
-
-
-        airCount.textContent =
-            String(
-                10 +
-                Math.floor(
-                    Math.random() * 12
-                )
-            );
-
-    },
-    2200
-);
-
+setInterval(() => {
+  satCount.textContent = String(5 + Math.floor(Math.random() * 8)).padStart(2, "0");
+  airCount.textContent = String(10 + Math.floor(Math.random() * 12));
+}, 2200);
 
 /* =========================================================
    SPACE PARTICLE FIELD
    ========================================================= */
-
-const spaceCanvas =
-    document.getElementById(
-        "spaceCanvas"
-    );
-
-const spaceCtx =
-    spaceCanvas.getContext(
-        "2d"
-    );
-
-
+const spaceCanvas = document.getElementById("spaceCanvas");
+const spaceCtx    = spaceCanvas.getContext("2d");
 let particles = [];
 
-
 function resizeSpace() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    const dpr =
-        Math.min(
-            window.devicePixelRatio || 1,
-            2
-        );
+  spaceCanvas.width  = window.innerWidth  * dpr;
+  spaceCanvas.height = window.innerHeight * dpr;
+  spaceCanvas.style.width  = window.innerWidth  + "px";
+  spaceCanvas.style.height = window.innerHeight + "px";
 
-
-    spaceCanvas.width =
-        window.innerWidth *
-        dpr;
-
-
-    spaceCanvas.height =
-        window.innerHeight *
-        dpr;
-
-
-    spaceCanvas.style.width =
-        window.innerWidth +
-        "px";
-
-
-    spaceCanvas.style.height =
-        window.innerHeight +
-        "px";
-
-
-    spaceCtx.setTransform(
-        dpr,
-        0,
-        0,
-        dpr,
-        0,
-        0
-    );
-
-
-    createParticles();
+  spaceCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  createParticles();
 }
-
-
-/* =========================================================
-   PARTICLES
-   ========================================================= */
 
 function createParticles() {
+  particles = [];
+  const count = Math.min(170, Math.floor(window.innerWidth * window.innerHeight / 6500));
 
-    particles = [];
-
-
-    const count =
-        Math.min(
-            170,
-            Math.floor(
-                window.innerWidth *
-                window.innerHeight /
-                6500
-            )
-        );
-
-
-    for (
-        let i = 0;
-        i < count;
-        i++
-    ) {
-
-        particles.push({
-
-            x:
-                Math.random() *
-                window.innerWidth,
-
-            y:
-                Math.random() *
-                window.innerHeight,
-
-            speed:
-                .08 +
-                Math.random() * .38,
-
-            size:
-                .35 +
-                Math.random() * 1.2,
-
-            alpha:
-                .12 +
-                Math.random() * .55
-
-        });
-
-    }
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      speed: 0.08 + Math.random() * 0.38,
+      size: 0.35 + Math.random() * 1.2,
+      alpha: 0.12 + Math.random() * 0.55
+    });
+  }
 }
-
-
-/* =========================================================
-   SPACE DRAW
-   ========================================================= */
 
 function drawSpace() {
+  spaceCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-    spaceCtx.clearRect(
-        0,
-        0,
-        window.innerWidth,
-        window.innerHeight
-    );
+  for (const p of particles) {
+    p.y += p.speed;
+    if (p.y > window.innerHeight) {
+      p.y = -5;
+      p.x = Math.random() * window.innerWidth;
+    }
 
+    spaceCtx.beginPath();
+    spaceCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    spaceCtx.fillStyle = `rgba(0, 210, 255, ${p.alpha})`;
+    spaceCtx.fill();
+  }
 
-    for (
-        const p of particles
-    ) {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const a = particles[i];
+      const b = particles[j];
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-        p.y +=
-            p.speed;
-
-
-        if (
-            p.y >
-            window.innerHeight
-        ) {
-
-            p.y = -5;
-
-            p.x =
-                Math.random() *
-                window.innerWidth;
-        }
-
-
+      if (distance < 78) {
+        const alpha = (1 - distance / 78) * 0.07;
         spaceCtx.beginPath();
-
-
-        spaceCtx.arc(
-            p.x,
-            p.y,
-            p.size,
-            0,
-            Math.PI * 2
-        );
-
-
-        spaceCtx.fillStyle =
-            `rgba(
-                0,
-                210,
-                255,
-                ${p.alpha}
-            )`;
-
-
-        spaceCtx.fill();
-
+        spaceCtx.moveTo(a.x, a.y);
+        spaceCtx.lineTo(b.x, b.y);
+        spaceCtx.strokeStyle = `rgba(0, 190, 255, ${alpha})`;
+        spaceCtx.lineWidth = 0.5;
+        spaceCtx.stroke();
+      }
     }
+  }
 
-
-    /* subtle particle connections */
-
-    for (
-        let i = 0;
-        i < particles.length;
-        i++
-    ) {
-
-        for (
-            let j = i + 1;
-            j < particles.length;
-            j++
-        ) {
-
-            const a =
-                particles[i];
-
-            const b =
-                particles[j];
-
-
-            const dx =
-                a.x - b.x;
-
-            const dy =
-                a.y - b.y;
-
-
-            const distance =
-                Math.sqrt(
-                    dx * dx +
-                    dy * dy
-                );
-
-
-            if (
-                distance < 78
-            ) {
-
-                const alpha =
-                    (
-                        1 -
-                        distance / 78
-                    ) * .07;
-
-
-                spaceCtx.beginPath();
-
-
-                spaceCtx.moveTo(
-                    a.x,
-                    a.y
-                );
-
-
-                spaceCtx.lineTo(
-                    b.x,
-                    b.y
-                );
-
-
-                spaceCtx.strokeStyle =
-                    `rgba(
-                        0,
-                        190,
-                        255,
-                        ${alpha}
-                    )`;
-
-
-                spaceCtx.lineWidth =
-                    .5;
-
-
-                spaceCtx.stroke();
-
-            }
-
-        }
-
-    }
-
-
-    requestAnimationFrame(
-        drawSpace
-    );
+  requestAnimationFrame(drawSpace);
 }
 
-
 /* =========================================================
-   ADVANCED NEURAL NETWORK CANVAS
+   NEURAL NETWORK CANVAS
    ========================================================= */
-
-const neuralCanvas =
-    document.getElementById(
-        "neuralCanvas"
-    );
-
-const neuralCtx =
-    neuralCanvas.getContext(
-        "2d"
-    );
-
-
+const neuralCanvas = document.getElementById("neuralCanvas");
+const neuralCtx    = neuralCanvas.getContext("2d");
 let neuralNodes = [];
 
-
 function resizeNeural() {
+  const rect = neuralCanvas.getBoundingClientRect();
+  const dpr  = Math.min(window.devicePixelRatio || 1, 2);
 
-    const rect =
-        neuralCanvas.getBoundingClientRect();
+  neuralCanvas.width  = rect.width  * dpr;
+  neuralCanvas.height = rect.height * dpr;
+  neuralCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-
-    const dpr =
-        Math.min(
-            window.devicePixelRatio || 1,
-            2
-        );
-
-
-    neuralCanvas.width =
-        rect.width * dpr;
-
-
-    neuralCanvas.height =
-        rect.height * dpr;
-
-
-    neuralCtx.setTransform(
-        dpr,
-        0,
-        0,
-        dpr,
-        0,
-        0
-    );
-
-
-    neuralNodes = [];
-
-
-    for (
-        let i = 0;
-        i < 34;
-        i++
-    ) {
-
-        neuralNodes.push({
-
-            x:
-                Math.random() *
-                rect.width,
-
-            y:
-                Math.random() *
-                rect.height,
-
-            vx:
-                (Math.random()-.5) *
-                .12,
-
-            vy:
-                (Math.random()-.5) *
-                .12,
-
-            pulse:
-                Math.random() *
-                Math.PI * 2
-
-        });
-
-    }
+  neuralNodes = [];
+  for (let i = 0; i < 34; i++) {
+    neuralNodes.push({
+      x: Math.random() * rect.width,
+      y: Math.random() * rect.height,
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: (Math.random() - 0.5) * 0.12,
+      pulse: Math.random() * Math.PI * 2
+    });
+  }
 }
-
-
-/* =========================================================
-   NEURAL NETWORK DRAW
-   ========================================================= */
 
 function drawNeural() {
+  const width  = neuralCanvas.clientWidth;
+  const height = neuralCanvas.clientHeight;
 
-    const width =
-        neuralCanvas.clientWidth;
+  neuralCtx.clearRect(0, 0, width, height);
 
-    const height =
-        neuralCanvas.clientHeight;
+  for (const node of neuralNodes) {
+    node.x += node.vx;
+    node.y += node.vy;
+    node.pulse += 0.025;
 
+    if (node.x < 0 || node.x > width)  node.vx *= -1;
+    if (node.y < 0 || node.y > height) node.vy *= -1;
+  }
 
-    neuralCtx.clearRect(
-        0,
-        0,
-        width,
-        height
-    );
+  for (let i = 0; i < neuralNodes.length; i++) {
+    for (let j = i + 1; j < neuralNodes.length; j++) {
+      const a = neuralNodes[i];
+      const b = neuralNodes[j];
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-
-    for (
-        const node of neuralNodes
-    ) {
-
-        node.x += node.vx;
-        node.y += node.vy;
-
-        node.pulse += .025;
-
-
-        if (
-            node.x < 0 ||
-            node.x > width
-        ) {
-
-            node.vx *= -1;
-
-        }
-
-
-        if (
-            node.y < 0 ||
-            node.y > height
-        ) {
-
-            node.vy *= -1;
-
-        }
-
-    }
-
-
-    /* connections */
-
-    for (
-        let i = 0;
-        i < neuralNodes.length;
-        i++
-    ) {
-
-        for (
-            let j = i + 1;
-            j < neuralNodes.length;
-            j++
-        ) {
-
-            const a =
-                neuralNodes[i];
-
-            const b =
-                neuralNodes[j];
-
-
-            const dx =
-                a.x - b.x;
-
-            const dy =
-                a.y - b.y;
-
-
-            const distance =
-                Math.sqrt(
-                    dx * dx +
-                    dy * dy
-                );
-
-
-            if (
-                distance < 48
-            ) {
-
-                const alpha =
-                    (
-                        1 -
-                        distance / 48
-                    ) * .5;
-
-
-                neuralCtx.beginPath();
-
-
-                neuralCtx.moveTo(
-                    a.x,
-                    a.y
-                );
-
-
-                neuralCtx.lineTo(
-                    b.x,
-                    b.y
-                );
-
-
-                neuralCtx.strokeStyle =
-                    `rgba(
-                        0,
-                        215,
-                        255,
-                        ${alpha}
-                    )`;
-
-
-                neuralCtx.lineWidth =
-                    .45;
-
-
-                neuralCtx.stroke();
-
-            }
-
-        }
-
-    }
-
-
-    /* nodes */
-
-    for (
-        const node of neuralNodes
-    ) {
-
-        const pulse =
-            1 +
-            Math.sin(
-                node.pulse
-            ) * .5;
-
-
+      if (distance < 48) {
+        const alpha = (1 - distance / 48) * 0.5;
         neuralCtx.beginPath();
-
-
-        neuralCtx.arc(
-            node.x,
-            node.y,
-            1.3 * pulse,
-            0,
-            Math.PI * 2
-        );
-
-
-        neuralCtx.fillStyle =
-            "#00eaff";
-
-
-        neuralCtx.shadowBlur =
-            7;
-
-
-        neuralCtx.shadowColor =
-            "#00eaff";
-
-
-        neuralCtx.fill();
-
-
-        neuralCtx.shadowBlur =
-            0;
-
+        neuralCtx.moveTo(a.x, a.y);
+        neuralCtx.lineTo(b.x, b.y);
+        neuralCtx.strokeStyle = `rgba(0, 215, 255, ${alpha})`;
+        neuralCtx.lineWidth = 0.45;
+        neuralCtx.stroke();
+      }
     }
+  }
 
+  for (const node of neuralNodes) {
+    const pulse = 1 + Math.sin(node.pulse) * 0.5;
 
-    requestAnimationFrame(
-        drawNeural
-    );
+    neuralCtx.beginPath();
+    neuralCtx.arc(node.x, node.y, 1.3 * pulse, 0, Math.PI * 2);
+    neuralCtx.fillStyle   = "#00eaff";
+    neuralCtx.shadowBlur  = 7;
+    neuralCtx.shadowColor = "#00eaff";
+    neuralCtx.fill();
+    neuralCtx.shadowBlur  = 0;
+  }
+
+  requestAnimationFrame(drawNeural);
 }
-
 
 /* =========================================================
    STARTUP
    ========================================================= */
-
-window.addEventListener(
-    "resize",
-    () => {
-
-        resizeSpace();
-
-        resizeNeural();
-
-    }
-);
-
+window.addEventListener("resize", () => {
+  resizeSpace();
+  resizeNeural();
+});
 
 resizeSpace();
-
 resizeNeural();
-
 drawSpace();
-
 drawNeural();
+setState("idle");
 
-setState(
-    "idle"
-);
+setTimeout(() => {
+  commandInput.focus();
+}, 600);
 
-
-setTimeout(
-    () => {
-
-        commandInput.focus();
-
-    },
-    600
-);
-
+if (window.speechSynthesis) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+}
 </script>
 
 </body>
